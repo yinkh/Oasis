@@ -1,0 +1,16 @@
+{% extends "admin/base.html" %}
+
+{% load admin_static %}
+{% block blockbots %}
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="{% static 'admin/css/responsive.css' %}"/>
+    <link rel="shortcut icon" href="{% static 'img/favicon.ico' %}"/>
+{% endblock %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block branding %}
+    <h1 id="site-name"><a href="{% url 'admin:index' %}">{{ 'Oasis' }}</a></h1>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}
