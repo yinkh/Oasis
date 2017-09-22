@@ -40,18 +40,6 @@ def validate_tel(tel):
         raise ValidationError('请输入正确的手机号码。')
 
 
-def validate_email(email):
-    """
-    正则匹配邮箱地址
-    :param email: 邮箱地址
-    :raise: ValidationError
-    """
-    # 格式 xx@xx.xx
-    email_regex = re.compile('(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)')
-    if not email_regex.match(email):
-        raise ValidationError('请输入正确的邮箱地址。')
-
-
 def is_tel(tel):
     """
     判断是否为手机号码
@@ -62,24 +50,6 @@ def is_tel(tel):
     tel = str(tel).replace('+86', '').replace(' ', '')
     tel_regex = re.compile('^0\d{2,3}\d{7,8}$|^1[358]\d{9}$|^147\d{8}')
     if tel_regex.match(tel):
-        return True
-    else:
-        return False
-
-
-def is_email(email):
-    """
-    判断是否为邮箱地址 格式 xx@xx.xx
-    :param email: 邮箱地址
-    :return: True False
-    """
-    #
-    email_regex = re.compile('(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)')
-
-    if not email or '@' not in email:
-        return False
-
-    if email_regex.match(email):
         return True
     else:
         return False

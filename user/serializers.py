@@ -3,7 +3,7 @@ from django.contrib.auth.hashers import make_password
 
 from common.serializers import *
 from .models import *
-from .utils import random_username, is_tel, is_email
+from .utils import random_username, is_tel
 
 
 # --------------------------------- 用户 ---------------------------------
@@ -51,13 +51,6 @@ class UserExpandSerializer(DynamicFieldsModelSerializer):
         else:
             raise serializers.ValidationError("请输入正确的手机号码")
 
-    # 验证email
-    def validate_email(self, value):
-        if is_email(value):
-            return value
-        else:
-            raise serializers.ValidationError("请输入正确的电子邮箱")
-
     def create(self, validated_data):
         if 'username' in validated_data:
             username = validated_data.pop('username')
@@ -65,19 +58,11 @@ class UserExpandSerializer(DynamicFieldsModelSerializer):
             username = random_username()
 
         user = User.objects.create_user(username=username, **validated_data)
-        if 'password' in validated_data:
-            pass
-            # # 为该用户生成Token
-            # token = Token.objects.create(user=user)
-            # token.save()
-        else:
-            user.has_usable_password()
-            user.set_unusable_password()
         return user
 
     class Meta:
         model = User
-        fields = ('username', 'password', 'gender', 'name', 'birth_day', 'email',
+        fields = ('username', 'password', 'gender', 'name', 'birth_day',
                   'tel', 'fixed_tel', 'qq', 'we_chat', 'contact_address',)
         extra_kwargs = {'username': {'required': False}}
 
@@ -99,18 +84,6 @@ class UserListSerializer(DynamicFieldsModelSerializer):
 class UserSerializer(DynamicFieldsModelSerializer):
     portrait = serializers.SerializerMethodField()
 
-    # 设置修改tel时返回400错误
-    def validate_tel(self, value):
-        if value:
-            raise serializers.ValidationError("手机号码需要验证后才可修改")
-        return value
-
-    # 设置修改email时返回400错误
-    def validate_email(self, value):
-        if value:
-            raise serializers.ValidationError("Email需要验证后才可修改")
-        return value
-
     class Meta:
         model = User
         exclude = ('password', 'is_superuser',)
@@ -126,12 +99,6 @@ class UserModifySerializer(DynamicFieldsModelSerializer):
     def validate_tel(self, value):
         if value:
             raise serializers.ValidationError("手机号码需要验证后才可修改")
-        return value
-
-    # 设置修改email时返回400错误
-    def validate_email(self, value):
-        if value:
-            raise serializers.ValidationError("Email需要验证后才可修改")
         return value
 
     class Meta:

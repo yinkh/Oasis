@@ -65,13 +65,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     birth_day = models.DateField(null=True,
                                  blank=True,
                                  verbose_name=u'生日')
-    # 电子邮件
-    email = models.CharField(max_length=255,
-                             unique=True,
-                             null=True,
-                             blank=True,
-                             verbose_name=u'电子邮件')
-
     # 所在地
     location = models.CharField(max_length=255,
                                 blank=True,

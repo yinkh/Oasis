@@ -69,7 +69,7 @@ class UserViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated,)
     filter_class = UserFilter
     ordering_fields = '__all__'
-    search_fields = ('name', 'username', 'tel', 'email')
+    search_fields = ('name', 'username', 'tel')
 
     # 重写 create 方法权限为AllowAny
     def get_permissions(self):
@@ -300,7 +300,7 @@ class UserViewSet(ModelViewSet):
 
     # 查看用户是否存在
     # Receive ----------------------------------
-    # username: 用户名/手机号码/电子邮箱
+    # username: 用户名/手机号码
     # Return -----------------------------------
     # 200 True/False 400-1 数据格式错误
     @list_route(methods=['POST'], permission_classes=[AllowAny])
@@ -308,8 +308,7 @@ class UserViewSet(ModelViewSet):
         try:
             username = request.data['username']
             User.objects.get(Q(username=username) |
-                             Q(tel=username) |
-                             Q(email=username))
+                             Q(tel=username))
             return success_response('True')
         except ObjectDoesNotExist:
             return success_response('False')
