@@ -58,10 +58,10 @@ class User(AbstractBaseUser, PermissionsMixin):
                                  default=2,
                                  blank=True,
                                  verbose_name=u'性别')
-    # 姓名
-    name = models.CharField(max_length=30,
-                            blank=True,
-                            verbose_name=u'姓名')
+    # 昵称
+    nickname = models.CharField(max_length=30,
+                                blank=True,
+                                verbose_name=u'昵称')
     # 生日
     birth_day = models.DateField(null=True,
                                  blank=True,
@@ -100,16 +100,16 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     # 获取全名
     def get_full_name(self):
-        if self.name == '':
+        if self.nickname == '':
             return self.username
         else:
-            return self.name
+            return self.nickname
 
     get_full_name.short_description = '全名'
 
     # 获取名称
     def get_short_name(self):
-        return self.name
+        return self.nickname
 
     # 获取头像
     def get_portrait(self):

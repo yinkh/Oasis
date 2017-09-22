@@ -9,6 +9,6 @@ class UserFilter(FilterSet):
             'username': ['exact', 'icontains'],
             'tel': ['exact', 'icontains'],
             'gender': ['exact'],
-            'name': ['exact', 'icontains'],
+            'nickname': ['exact', 'icontains'],
             'email': ['exact', 'icontains'],
         }
