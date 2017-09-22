@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
-
+from datetime import timedelta
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -30,6 +30,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_filters',
+    'rest_framework',
     'user',
 ]
 
@@ -115,7 +117,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'user.auth.TokenAuthentication',
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
         # SessionAuthentication将允许DRF网页认证登陆
         # 会在AllowAny时导致 403 CSRF Failed: CSRF token missing or incorrect
         # 'rest_framework.authentication.SessionAuthentication',
@@ -138,6 +140,18 @@ REST_FRAMEWORK = {
     'DATETIME_FORMAT': '%Y-%m-%d %H:%M:%S',
     'ORDERING_PARAM': 'ordering',
     'SEARCH_PARAM': 'search',
+}
+
+# token auth 配置
+JWT_AUTH = {
+    # Token可用时长
+    'JWT_EXPIRATION_DELTA': timedelta(days=7),
+    # 允许以旧Token换取新Token
+    'JWT_ALLOW_REFRESH': True,
+    # 7天内下发的Token可以以旧Token换取新Token
+    'JWT_REFRESH_EXPIRATION_DELTA': timedelta(days=7),
+    # Authorization:Token xxx
+    'JWT_AUTH_HEADER_PREFIX': 'Token',
 }
 
 # 设置user model

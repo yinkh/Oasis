@@ -19,3 +19,12 @@ class MyUserAdmin(UserAdmin):
 
 
 admin.site.register(User, MyUserAdmin)
+
+
+# 短信验证码
+class TelAdmin(admin.ModelAdmin):
+    list_display = ['tel', 'code', 'purpose', 'duration', 'send_time']
+    search_fields = ('tel',)
+
+
+admin.site.register(TelVerify, TelAdmin)

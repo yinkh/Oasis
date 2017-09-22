@@ -1,9 +1,14 @@
+import random
+from datetime import timedelta
+
 from django.db import models
 from django.utils import timezone
 from django.core.validators import RegexValidator
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import PermissionsMixin
 from django.contrib.auth.models import AbstractBaseUser, UserManager
+
+from rest_framework_jwt.settings import api_settings
 
 from common.utils import get_time_filename
 
@@ -30,6 +35,13 @@ class User(AbstractBaseUser, PermissionsMixin):
         },
         verbose_name=u'用户名'
     )
+    # 手机号码
+    tel = models.CharField(max_length=20,
+                           unique=True,
+                           error_messages={
+                               'unique': "具有该手机号码的用户已存在",
+                           },
+                           verbose_name=u'手机号码')
     # 头像
     portrait = models.ImageField(upload_to=get_file_path,
                                  null=True,
@@ -59,15 +71,7 @@ class User(AbstractBaseUser, PermissionsMixin):
                              null=True,
                              blank=True,
                              verbose_name=u'电子邮件')
-    # 手机号码
-    tel = models.CharField(max_length=20,
-                           unique=True,
-                           null=True,
-                           blank=True,
-                           error_messages={
-                               'unique': "具有该手机号码的用户已存在",
-                           },
-                           verbose_name=u'手机号码')
+
     # 所在地
     location = models.CharField(max_length=255,
                                 blank=True,
@@ -96,13 +100,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         verbose_name_plural = _('用户')
         ordering = ('id',)
 
-        permissions = (
-            ("view_user", "查看用户"),
-            ("add_settings", "新增设置"),
-            ("change_settings", "更改设置"),
-            ("delete_settings", "删除设置"),
-        )
-
     # 获取全名
     def get_full_name(self):
         if self.name == '':
@@ -116,6 +113,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     def get_short_name(self):
         return self.name
 
+    # 获取头像
     def get_portrait(self):
         if self.portrait:
             return self.portrait.url
@@ -127,5 +125,79 @@ class User(AbstractBaseUser, PermissionsMixin):
             else:
                 return '/media/default/user/default.png'
 
+    # 获取Token
+    def get_token(self):
+        jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
+        jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
+        payload = jwt_payload_handler(self)
+        token = jwt_encode_handler(payload)
+        return token
+
     def __str__(self):
         return '{} {}'.format(self.id, self.get_full_name())
+
+
+# 短信验证码
+class TelVerify(models.Model):
+    # 手机号码
+    tel = models.CharField(max_length=12,
+                           verbose_name=u'手机号码')
+    # 验证码
+    code = models.CharField(max_length=30,
+                            verbose_name=u'验证码')
+    PURPOSE = {
+        1: u'用户注册',
+        2: u'找回密码',
+        3: u'修改绑定',
+        4: u'身份验证',
+    }
+    # 验证码用途 1注册 2找回密码 3修改绑定 4身份验证
+    purpose = models.IntegerField(default=1,
+                                  choices=PURPOSE.items(),
+                                  verbose_name=u'用途')
+    # 有效时长
+    duration = models.DurationField(default=timedelta(minutes=15),
+                                    verbose_name='有效时长')
+    # 发送时间
+    send_time = models.DateTimeField(default=timezone.now,
+                                     verbose_name=u'发送时间')
+    # 创建时间
+    create_time = models.DateTimeField(auto_now_add=True,
+                                       verbose_name=u'创建时间')
+    # 更新时间
+    update_time = models.DateTimeField(auto_now=True,
+                                       verbose_name=u'更新时间')
+
+    class Meta:
+        verbose_name = '短信验证码'
+        verbose_name_plural = '短信验证码'
+        ordering = ('id',)
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.code = self.generate_verification_code()
+        return super(TelVerify, self).save(*args, **kwargs)
+
+    # 更新验证码
+    def update(self):
+        self.code = self.generate_verification_code()
+        self.save()
+        return self.code
+
+    @staticmethod
+    def generate_verification_code():
+        """
+        :return: 随机生成6位的验证码
+        """
+        code_list = []
+        # 0-9数字
+        for i in range(10):
+            code_list.append(str(i))
+        # 从list中随机获取6个元素，作为一个片断返回
+        my_slice = random.sample(code_list, 6)
+        # list to string
+        verification_code = ''.join(my_slice)
+        return verification_code
+
+    def __str__(self):
+        return self.tel
