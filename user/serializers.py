@@ -95,22 +95,17 @@ class UserSerializer(DynamicFieldsModelSerializer):
 
 # 全部信息
 class UserModifySerializer(DynamicFieldsModelSerializer):
-    # 设置修改tel时返回400错误
-    def validate_tel(self, value):
-        if value:
-            raise serializers.ValidationError("手机号码需要验证后才可修改")
-        return value
 
     class Meta:
         model = User
-        exclude = ('password', 'is_superuser',)
+        fields = ('id', 'username', 'portrait', 'gender', 'name', 'birth_day', 'email',
+                  'location', 'introduction')
 
 
 # --------------------------------- 协议 ---------------------------------
 # 创建协议
 class AgreementCreateSerializer(ModelSerializer):
     def create(self, validated_data):
-        print(validated_data)
         instance, is_created = Agreement.objects.get_or_create(user=validated_data['user'],
                                                                version=validated_data['version'])
         instance.is_agree = validated_data['is_agree']

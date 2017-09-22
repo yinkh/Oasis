@@ -9,6 +9,7 @@ from rest_framework.decorators import list_route
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.throttling import UserRateThrottle
 
+from common.permissions import IsSelf
 from common.response import success_response, error_response
 from common.viewset import ModelViewSet, CreateModelMixin, HumanizationSerializerErrorsMixin, GenericViewSet
 from common.exception import VerifyError
@@ -73,8 +74,10 @@ class UserViewSet(ModelViewSet):
 
     # 重写 create 方法权限为AllowAny
     def get_permissions(self):
-        if self.action in ('create',):
+        if self.action == 'create':
             self.permission_classes = [AllowAny, ]
+        elif self.action in ('update', 'partial_update'):
+            self.permission_classes = [IsAuthenticated, IsSelf, ]
         return super(self.__class__, self).get_permissions()
 
     # override POST /user/
@@ -111,9 +114,8 @@ class UserViewSet(ModelViewSet):
         except Exception as e:
             return error_response(1, str(e))
 
-    def perform_destroy(self, instance):
-        instance.is_active = False
-        instance.save()
+    def destroy(self, request, *args, **kwargs):
+        return success_response('禁止删除')
 
     # 用户登陆
     # Receive ----------------------------------
