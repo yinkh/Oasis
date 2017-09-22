@@ -66,6 +66,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     birth_day = models.DateField(null=True,
                                  blank=True,
                                  verbose_name=u'生日')
+    # 电子邮件
+    email = models.EmailField(max_length=255,
+                              blank=True,
+                              verbose_name=u'电子邮件')
     # 所在地
     location = models.CharField(max_length=255,
                                 blank=True,
@@ -166,6 +170,7 @@ class TelVerify(models.Model):
         verbose_name = '短信验证码'
         verbose_name_plural = '短信验证码'
         ordering = ('id',)
+        unique_together = ('tel', 'purpose')
 
     def save(self, *args, **kwargs):
         if not self.pk:
