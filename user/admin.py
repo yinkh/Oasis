@@ -28,3 +28,13 @@ class TelAdmin(admin.ModelAdmin):
 
 
 admin.site.register(TelVerify, TelAdmin)
+
+
+# 协议
+class AgreementAdmin(admin.ModelAdmin):
+    list_display = ['user', 'version', 'is_agree', 'is_abandon', 'update_time']
+    search_fields = ('tel',)
+    list_filter = ('version', 'is_agree', 'is_abandon',)
+
+
+admin.site.register(Agreement, AgreementAdmin)

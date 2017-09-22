@@ -10,6 +10,7 @@ from django.contrib.auth.models import AbstractBaseUser, UserManager
 
 from rest_framework_jwt.settings import api_settings
 
+from common.models import Base
 from common.utils import get_time_filename
 
 
@@ -194,3 +195,26 @@ class TelVerify(models.Model):
 
     def __str__(self):
         return self.tel
+
+
+# 协议
+class Agreement(Base):
+    # 用户
+    user = models.ForeignKey('user.User',
+                             on_delete=models.CASCADE,
+                             related_name='agreement_user',
+                             verbose_name=u'用户')
+    # 版本
+    version = models.CharField(max_length=255,
+                               verbose_name=u'版本')
+    # 是否授权
+    is_agree = models.BooleanField(default=False,
+                                   verbose_name=u'是否授权')
+
+    class Meta:
+        verbose_name = '协议'
+        verbose_name_plural = '协议'
+        ordering = ('id',)
+
+    def __str__(self):
+        return '{} version:{} is_agree:{}'.format(self.user.get_full_name(), self.version, self.is_agree)
