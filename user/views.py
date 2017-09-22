@@ -10,7 +10,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.throttling import UserRateThrottle
 
 from common.response import success_response, error_response
-from common.viewset import ModelViewSet
+from common.viewset import ModelViewSet, CreateModelMixin, HumanizationSerializerErrorsMixin, GenericViewSet
 from common.exception import VerifyError
 
 from .serializers import *
@@ -302,18 +302,60 @@ class UserViewSet(ModelViewSet):
     # Receive ----------------------------------
     # username: 用户名/手机号码
     # Return -----------------------------------
-    # 200 True/False 400-1 数据格式错误
+    # 200 true/false 400-1 数据格式错误
     @list_route(methods=['POST'], permission_classes=[AllowAny])
     def exist(self, request):
         try:
             username = request.data['username']
             User.objects.get(Q(username=username) |
                              Q(tel=username))
-            return success_response('True')
+            return success_response(True)
         except ObjectDoesNotExist:
-            return success_response('False')
+            return success_response(False)
         except MultipleObjectsReturned:
-            return success_response('False')
+            return success_response(False)
+        except KeyError as e:
+            return error_response(1, '获取参数{}失败'.format(e.__context__))
+        except Exception as e:
+            return error_response(1, str(e))
+
+
+# 协议
+class AgreementViewSet(CreateModelMixin, HumanizationSerializerErrorsMixin, GenericViewSet):
+    queryset = Agreement.objects.all()
+    serializer_class = AgreementCreateSerializer
+    permission_classes = (IsAuthenticated,)
+
+    # 创建协议
+    # Receive ----------------------------------
+    # is_agree: 是否授权协议
+    # version: 协议版本
+    # Return -----------------------------------
+    # 200 设置成功 400-1 数据格式错误
+    def create(self, request, *args, **kwargs):
+        data = request.data.copy()
+        data['user'] = request.user.id
+        serializer = self.get_serializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return success_response('设置成功')
+        else:
+            return error_response(1, self.humanize_errors(serializer))
+
+    # 查看用户是否授权协议
+    # Receive ----------------------------------
+    # version: 协议版本
+    # Return -----------------------------------
+    # 200 true/false 400-1 数据格式错误
+    @list_route(methods=['POST'])
+    def check(self, request):
+        try:
+            instance = self.get_queryset().get(user=self.request.user, version=request.data['version'])
+            return success_response(instance.is_agree)
+        except ObjectDoesNotExist:
+            return success_response(False)
+        except MultipleObjectsReturned:
+            return success_response(False)
         except KeyError as e:
             return error_response(1, '获取参数{}失败'.format(e.__context__))
         except Exception as e:

@@ -104,3 +104,19 @@ class UserModifySerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = User
         exclude = ('password', 'is_superuser',)
+
+
+# --------------------------------- 协议 ---------------------------------
+# 创建协议
+class AgreementCreateSerializer(ModelSerializer):
+    def create(self, validated_data):
+        print(validated_data)
+        instance, is_created = Agreement.objects.get_or_create(user=validated_data['user'],
+                                                               version=validated_data['version'])
+        instance.is_agree = validated_data['is_agree']
+        instance.save()
+        return instance
+
+    class Meta:
+        model = Agreement
+        fields = ('user', 'version', 'is_agree')
