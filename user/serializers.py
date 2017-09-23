@@ -86,7 +86,8 @@ class UserSerializer(DynamicFieldsModelSerializer):
 
     class Meta:
         model = User
-        exclude = ('password', 'is_superuser',)
+        fields = ('id', 'username', 'tel', 'portrait', 'gender', 'nickname', 'birth_day', 'email',
+                  'location', 'introduction', 'last_login', 'get_gender_display', 'get_full_name')
 
     def get_portrait(self, instance):
         request = self.context.get('request')

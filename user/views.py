@@ -71,7 +71,7 @@ class UserViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated,)
     filter_class = UserFilter
     ordering_fields = '__all__'
-    search_fields = ('name', 'username', 'tel')
+    search_fields = ('username', 'tel', 'nickname')
 
     # 重写 create 方法权限为AllowAny
     def get_permissions(self):
