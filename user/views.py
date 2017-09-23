@@ -10,6 +10,8 @@ from rest_framework.decorators import list_route
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.throttling import UserRateThrottle
 
+from alidayu.api.base import TopException
+
 from common.permissions import IsSelf
 from common.response import success_response, error_response
 from common.viewset import ModelViewSet, CreateModelMixin, HumanizationSerializerErrorsMixin, GenericViewSet
@@ -293,6 +295,11 @@ class UserViewSet(ModelViewSet):
                 tel_verify.save()
                 # 发送短信
                 # TODO 发送短信
+                # try:
+                #     resp = tel_verify.send_sms()
+                #     print(resp)
+                # except TopException as e:
+                #     print(e.errorcode, e.message)
                 return success_response('发送成功')
             else:
                 return error_response(4, '请输入合法号码')

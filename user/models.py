@@ -2,6 +2,7 @@ import random
 from datetime import timedelta
 
 from django.db import models
+from django.conf import settings
 from django.utils import timezone
 from django.core.validators import RegexValidator
 from django.utils.translation import ugettext_lazy as _
@@ -9,6 +10,8 @@ from django.contrib.auth.models import PermissionsMixin
 from django.contrib.auth.models import AbstractBaseUser, UserManager
 
 from rest_framework_jwt.settings import api_settings
+
+from alidayu import api, appinfo
 
 from common.models import Base
 from common.utils import get_time_filename
@@ -182,6 +185,19 @@ class TelVerify(models.Model):
         self.code = self.generate_verification_code()
         self.save()
         return self.code
+
+    # 阿里大于发送短信
+    def send_sms(self):
+        req = api.AlibabaAliqinFcSmsNumSendRequest()
+        req.set_app_info(appinfo(settings.SMS_ID, settings.SMS_SECRET))
+
+        req.sms_type = "normal"
+        req.rec_num = self.tel
+        req.sms_template_code = "SMS_98365026"
+        req.sms_free_sign_name = "Oasis"
+        req.sms_param = {"code": self.code}
+        resp = req.getResponse()
+        return resp
 
     @staticmethod
     def generate_verification_code():

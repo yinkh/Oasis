@@ -123,6 +123,10 @@ BUCKET_ACL_TYPE = "public-read"  # private, public-read, public-read-write
 
 DEFAULT_FILE_STORAGE = 'common.storage.AliyunMediaStorage'
 
+# 阿里大于配置
+SMS_ID = "LTAILDPcXne8GC2P"
+SMS_SECRET = "U79XzpU9uFNtnzZp1Sv7b8qNB13KDJ"
+
 # REST_FRAMEWORK设置
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
