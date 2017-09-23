@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 
 import os
 from datetime import timedelta
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -32,6 +33,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_filters',
     'rest_framework',
+    'django_cleanup',
     'user',
 ]
 
@@ -110,6 +112,16 @@ USE_I18N = True
 USE_L10N = True
 # 存储至数据库不使用UTC时间
 USE_TZ = False
+
+# OSS配置
+ACCESS_KEY_ID = "LTAILDPcXne8GC2P"
+ACCESS_KEY_SECRET = "U79XzpU9uFNtnzZp1Sv7b8qNB13KDJ"
+END_POINT = "oss-cn-beijing.aliyuncs.com"
+BUCKET_NAME = "oasis-story"
+ALIYUN_OSS_CNAME = ""
+BUCKET_ACL_TYPE = "public-read"  # private, public-read, public-read-write
+
+DEFAULT_FILE_STORAGE = 'common.storage.AliyunMediaStorage'
 
 # REST_FRAMEWORK设置
 REST_FRAMEWORK = {

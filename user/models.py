@@ -117,11 +117,11 @@ class User(AbstractBaseUser, PermissionsMixin):
             return self.portrait.url
         else:
             if self.gender == 0:
-                return '/media/default/user/default_female.png'
+                return '/static/default/user/default_female.png'
             elif self.gender == 1:
-                return '/media/default/user/default_male.png'
+                return '/static/default/user/default_male.png'
             else:
-                return '/media/default/user/default.png'
+                return '/static/default/user/default.png'
 
     # 获取Token
     def get_token(self):

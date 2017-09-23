@@ -1,6 +1,7 @@
 import logging
 
 from datetime import datetime
+from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
@@ -321,6 +322,15 @@ class UserViewSet(ModelViewSet):
             return error_response(1, '获取参数{}失败'.format(e.__context__))
         except Exception as e:
             return error_response(1, str(e))
+
+    # 查看当前OSS文件列表 测试用接口
+    @list_route(methods=['GET'], permission_classes=[AllowAny])
+    def oss(self, request):
+        import oss2
+        auth = oss2.Auth(settings.ACCESS_KEY_ID, settings.ACCESS_KEY_SECRET)
+        bucket = oss2.Bucket(auth, settings.END_POINT, settings.BUCKET_NAME, enable_crc=False)
+        file_list = [obj.key for obj in oss2.ObjectIterator(bucket, prefix='media')]
+        return success_response(file_list)
 
 
 # 协议
