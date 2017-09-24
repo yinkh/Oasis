@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 from common.models import Base
 from common.constants import FriendState
@@ -18,12 +19,14 @@ class Friend(Base):
                                 verbose_name=u'关系结束人')
     # 当前好友状态选项
     STATE = {
+        FriendState.Unrelated: u'无关系',
         FriendState.Pending: u'待处理',
-        FriendState.Accept: u'已接受',
+        FriendState.Agree: u'已同意',
         FriendState.Reject: u'已拒绝',
     }
     # 当前好友状态
     state = models.IntegerField(choices=STATE.items(),
+                                default=FriendState.Unrelated,
                                 verbose_name=u'好友状态')
     # 黑名单
     is_block = models.BooleanField(default=False,
@@ -36,6 +39,10 @@ class Friend(Base):
     say_hi = models.CharField(max_length=255,
                               blank=True,
                               verbose_name=u'验证消息')
+    # 添加时间
+    accept_time = models.DateTimeField(null=True,
+                                       blank=True,
+                                       verbose_name=u'添加时间')
 
     class Meta:
         verbose_name = '好友关系'

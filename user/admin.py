@@ -36,5 +36,8 @@ class AgreementAdmin(admin.ModelAdmin):
     search_fields = ('tel',)
     list_filter = ('version', 'is_agree', 'is_abandon',)
 
+    def get_queryset(self, request):
+        return Agreement.all.all()
+
 
 admin.site.register(Agreement, AgreementAdmin)

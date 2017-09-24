@@ -16,7 +16,7 @@ class DjangoPaginator(Paginator):
 
 # 分页
 class Pagination(PageNumberPagination):
-    # django_paginator_class = DjangoPaginator
+    django_paginator_class = DjangoPaginator
     page_number = 1
     page_size_query_param = 'page_size'
     max_page_size = 100
