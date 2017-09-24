@@ -40,9 +40,9 @@ class Friend(Base):
                               blank=True,
                               verbose_name=u'验证消息')
     # 添加时间
-    accept_time = models.DateTimeField(null=True,
-                                       blank=True,
-                                       verbose_name=u'添加时间')
+    agree_time = models.DateTimeField(null=True,
+                                      blank=True,
+                                      verbose_name=u'添加时间')
 
     class Meta:
         verbose_name = '好友关系'

@@ -14,6 +14,7 @@ from user.models import User
 
 from .models import *
 from .serializers import *
+from .filters import *
 
 
 # 好友关系视图集
@@ -29,6 +30,9 @@ class FriendViewSet(ModelViewSet):
         'update': FriendModifySerializer,
     }
     permission_classes = (IsAuthenticated,)
+    filter_class = FriendFilter
+    ordering_fields = '__all__'
+    search_fields = ('to_user__username', 'to_user__nickname', 'to_user__tel', 'remark')
 
     def get_queryset(self):
         user = self.request.user
@@ -87,6 +91,7 @@ class FriendViewSet(ModelViewSet):
     # 我->B 返回B的集合
     # 查看我的好友列表
     def list(self, request, *args, **kwargs):
+        self.action = 'list_to'
         friends = self.get_queryset().filter(from_user=request.user, state=FriendState.Agree, is_block=False).all()
         return self.list_queryset(request, friends, *args, **kwargs)
 
@@ -102,7 +107,7 @@ class FriendViewSet(ModelViewSet):
         start = timezone.now() - timedelta(hours=23, minutes=59, seconds=59)
         # 添加我的新朋友
         friends_new = queryset.filter(to_user=request.user, state=FriendState.Agree, is_block=False,
-                                      accept_time__gt=start).all()
+                                      agree_time__gt=start).all()
         # 我的待处理
         friends_pending = queryset.filter(to_user=request.user, state=FriendState.Pending, is_block=False)
         # 我拉黑的用户
@@ -167,13 +172,13 @@ class FriendViewSet(ModelViewSet):
                             # 接受请求
                             if state == FriendState.Agree:
                                 friend.state = state
-                                friend.accept_time = timezone.now()
+                                friend.agree_time = timezone.now()
                                 friend.save()
                                 # 反向设置B->A
                                 friend_from, is_created = self.get_queryset().get_or_create(from_user=friend.to_user,
                                                                                             to_user=friend.from_user)
                                 friend_from.state = state
-                                friend_from.accept_time = timezone.now()
+                                friend_from.agree_time = timezone.now()
                                 friend_from.remark = friend.from_user.get_full_name()
                                 friend_from.save()
                                 # TODO 向用户A推送B通过了他的好友请求

@@ -18,7 +18,7 @@ class FriendListSerializer(ModelSerializer):
 
     class Meta:
         model = Friend
-        fields = ('id', 'from_user', 'to_user', 'state', 'remark', 'say_hi', 'accept_time',
+        fields = ('id', 'from_user', 'to_user', 'state', 'remark', 'say_hi', 'agree_time',
                   'create_time', 'update_time', 'get_state_display')
 
 
@@ -27,7 +27,7 @@ class FriendFromListSerializer(ModelSerializer):
 
     class Meta:
         model = Friend
-        fields = ('id', 'from_user', 'to_user', 'state', 'remark', 'say_hi', 'accept_time',
+        fields = ('id', 'from_user', 'to_user', 'state', 'remark', 'say_hi', 'agree_time',
                   'create_time', 'update_time', 'get_state_display')
 
 
@@ -36,7 +36,7 @@ class FriendToListSerializer(ModelSerializer):
 
     class Meta:
         model = Friend
-        fields = ('id', 'from_user', 'to_user', 'state', 'remark', 'say_hi', 'accept_time',
+        fields = ('id', 'from_user', 'to_user', 'state', 'remark', 'say_hi', 'agree_time',
                   'create_time', 'update_time', 'get_state_display')
 
 
