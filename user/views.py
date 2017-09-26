@@ -10,8 +10,6 @@ from rest_framework.decorators import list_route
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.throttling import UserRateThrottle
 
-from alidayu.api.base import TopException
-
 from common.permissions import IsSelf
 from common.response import success_response, error_response
 from common.viewset import ModelViewSet, CreateModelMixin, HumanizationSerializerErrorsMixin, GenericViewSet

@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'django_cleanup',
     'user',
     'friend',
+    'follow',
 ]
 
 MIDDLEWARE = [
