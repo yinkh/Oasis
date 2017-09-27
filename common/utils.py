@@ -1,5 +1,10 @@
 import os
 from datetime import datetime
+from .sms import AliYunSMS
+from .exception import SmsError
+import logging
+
+logger = logging.getLogger("info")
 
 
 def get_time_filename(filename):
@@ -58,3 +63,23 @@ def str2bool_exc(value):
     :return:转换后的值或者ValueError
     """
     return str2bool(value, raise_exc=True)
+
+
+def send_sms(phone_number, template_code, template_param):
+    # ALISMS_SIGN = "Oasis绿洲"
+    # ALISMS_TPL_REGISTER = "SMS_98365026"
+    try:
+        response = AliYunSMS().send_single(phone_number, "Oasis绿洲", template_code, template_param)
+
+        if response.status_code == 200:
+            resp_json = response.json()
+            code = resp_json['Code']
+            if code == 'OK':
+                pass
+            else:
+                raise SmsError(code)
+        else:
+            logger.error('{} {}'.format(response.status_code, response.text))
+            raise SmsError('连接短信服务器失败')
+    except Exception as e:
+        raise SmsError(str(e))

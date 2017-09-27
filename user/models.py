@@ -12,7 +12,8 @@ from django.contrib.auth.models import AbstractBaseUser, UserManager
 from rest_framework_jwt.settings import api_settings
 
 from common.models import Base
-from common.utils import get_time_filename
+from common.utils import get_time_filename, send_sms
+from common.exception import SmsError
 
 
 def get_file_path(instance, filename):
@@ -160,6 +161,14 @@ class TelVerify(models.Model):
     # 发送时间
     send_time = models.DateTimeField(default=timezone.now,
                                      verbose_name=u'发送时间')
+    # 是否发送成功
+    is_success = models.BooleanField(default=False,
+                                     verbose_name=u'是否发送成功')
+    # 失败原因
+    failure_reason = models.CharField(max_length=255,
+                                      null=True,
+                                      blank=True,
+                                      verbose_name=u'失败原因')
     # 创建时间
     create_time = models.DateTimeField(auto_now_add=True,
                                        verbose_name=u'创建时间')
@@ -186,8 +195,28 @@ class TelVerify(models.Model):
 
     # 阿里大于发送短信
     def send_sms(self):
-
-        return None
+        try:
+            if self.purpose == 1:
+                # 用户注册
+                send_sms(self.tel, 'SMS_98365026', {'code': self.code})
+            elif self.purpose == 2:
+                # 找回密码
+                send_sms(self.tel, 'SMS_98365026', {'code': self.code})
+            elif self.purpose == 3:
+                # 修改绑定
+                send_sms(self.tel, 'SMS_98365026', {'code': self.code})
+            else:
+                # 身份验证
+                send_sms(self.tel, 'SMS_98365026', {'code': self.code})
+            self.is_success = True
+            self.failure_reason = ''
+            self.save()
+            return None
+        except SmsError as e:
+            self.is_success = False
+            self.failure_reason = e.message
+            self.save()
+            return e.message
 
     @staticmethod
     def generate_verification_code():

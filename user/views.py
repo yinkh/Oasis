@@ -271,8 +271,8 @@ class UserViewSet(ModelViewSet):
     # Return -----------------------------------
     # 200 发送成功 400-1 数据格式错误 400-2 该用户已注册,请直接登陆
     # 400-3 该用户未注册,无法找回密码  400-4 请输入合法号码 429 请求过快
-    # @list_route(methods=['POST'], permission_classes=[AllowAny], throttle_classes=[SmsRateThrottle])
-    @list_route(methods=['POST'], permission_classes=[AllowAny])
+    @list_route(methods=['POST'], permission_classes=[AllowAny], throttle_classes=[SmsRateThrottle])
+    # @list_route(methods=['POST'], permission_classes=[AllowAny])
     def send_verify(self, request):
         try:
             purpose = int(request.data['purpose'])
@@ -292,13 +292,11 @@ class UserViewSet(ModelViewSet):
                 tel_verify.send_time = timezone.now()
                 tel_verify.save()
                 # 发送短信
-                # TODO 发送短信
-                try:
-                    resp = tel_verify.send_sms()
-                    print(resp)
-                except TopException as e:
-                    print(e.errorcode, e.message)
-                return success_response('发送成功')
+                failure_reason = tel_verify.send_sms()
+                if failure_reason:
+                    return error_response(5, failure_reason)
+                else:
+                    return success_response('发送成功')
             else:
                 return error_response(4, '请输入合法号码')
         except KeyError as e:

@@ -5,26 +5,34 @@ import base64
 import requests
 from urllib.parse import quote
 
-# ACCESS_KEY_ID/ACCESS_KEY_SECRET 根据实际申请的账号信息进行替换
-ACCESS_KEY_ID = "LTAICBBycK9mbE9g"
-
-ACCESS_KEY_SECRET = "ohU9KJnc17E8QpRyzK9QTY7i5s2Qxj"
+from django.conf import settings
 
 
-class AliYunSMS(object):
+class Singleton(type):
+    def __init__(cls, name, bases, dict):
+        super(Singleton, cls).__init__(name, bases, dict)
+        cls.instance = None
+
+    def __call__(cls, *args, **kw):
+        if cls.instance is None:
+            cls.instance = super(Singleton, cls).__call__(*args, **kw)
+        return cls.instance
+
+
+class AliYunSMS(metaclass=Singleton):
     def __init__(self):
         self.format = "JSON"
         self.version = "2017-05-25"
-        self.key = ACCESS_KEY_ID
-        self.secret = ACCESS_KEY_SECRET
+        self.key = settings.SMS_ID
+        self.secret = settings.SMS_SECRET
         self.signature = ""
         self.signature_method = "HMAC-SHA1"
         self.signature_version = "1.0"
         self.signature_nonce = str(uuid.uuid4())
         self.timestamp = datetime.datetime.utcnow().isoformat("T")
-        self.region_id = ALIYUN_API_REGION_ID
+        self.region_id = "cn-hangzhou"  # 区域,可选
 
-        self.gateway = ALISMS_GATEWAY
+        self.gateway = "http://dysmsapi.aliyuncs.com/"
         self.action = ""
         self.sign = ""
         self.template = ""
@@ -41,7 +49,6 @@ class AliYunSMS(object):
         query_string = self.build_query_string()
 
         resp = requests.get(self.gateway + "?" + query_string)
-        resp = resp.json()
         return resp
 
     def build_query_string(self):
@@ -74,25 +81,3 @@ class AliYunSMS(object):
         self.signature = quote(base64.standard_b64encode(hmb).decode("ascii"), safe="~")
         query_string += "&" + "Signature=" + self.signature
         return query_string
-
-
-# 可选XML
-ALIYUN_API_FORMAT = "JSON"
-
-# 区域,可选
-ALIYUN_API_REGION_ID = "cn-hangzhou"
-
-ALISMS_GATEWAY = "http://dysmsapi.aliyuncs.com/"
-ALISMS_SIGN = "Oasis绿洲"
-ALISMS_TPL_REGISTER = "SMS_98365026"
-
-sms = AliYunSMS()
-# :param phone: 手机号
-# :param sign: 短信签名
-# :param template: 短信模板
-# :param params: 模板变量
-# sms.send_singe(phone, sign, template, params)
-
-# TODO 调用短信记录查询接口，返回json
-response = sms.send_single("18094213193", ALISMS_SIGN, ALISMS_TPL_REGISTER, {"code": "12345"})
-print(response)
