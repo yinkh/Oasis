@@ -129,9 +129,6 @@ class UserViewSet(ModelViewSet):
     def login(self, request):
         try:
             username = request.data['username']
-            # 防止输入空用户名试图登陆
-            if not username or username == '':
-                return error_response(2, '用户名或密码错误')
             try:
                 instance = User.objects.get(Q(username=username) | Q(tel=username))
             except ObjectDoesNotExist:
@@ -139,8 +136,23 @@ class UserViewSet(ModelViewSet):
             except MultipleObjectsReturned:
                 return error_response(3, '用户登陆凭证冲突')
 
-            user = authenticate(username=instance.username,
-                                password=request.data['password'])
+            if 'password' in request.data:
+                # 密码登陆
+                user = authenticate(username=instance.username,
+                                    password=request.data['password'])
+            elif 'code' in request.data:
+                # 验证码登陆
+                if is_tel(username):
+                    try:
+                        check_sms_verify(username, 4, request.data['code'])
+                        user = instance
+                    except VerifyError as e:
+                        return error_response(5, e.message)
+                else:
+                    return error_response(6, '请输入合法号码')
+            else:
+                return error_response(5, '未提供登陆凭证')
+
             if user is not None:
                 if user.is_active:
                     # 登陆系统
