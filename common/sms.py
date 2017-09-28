@@ -28,8 +28,6 @@ class AliYunSMS(metaclass=Singleton):
         self.signature = ""
         self.signature_method = "HMAC-SHA1"
         self.signature_version = "1.0"
-        self.signature_nonce = str(uuid.uuid4())
-        self.timestamp = datetime.datetime.utcnow().isoformat("T")
         self.region_id = "cn-hangzhou"  # 区域,可选
 
         self.gateway = "http://dysmsapi.aliyuncs.com/"
@@ -58,8 +56,8 @@ class AliYunSMS(metaclass=Singleton):
         query.append(("AccessKeyId", self.key))
         query.append(("SignatureMethod", self.signature_method))
         query.append(("SignatureVersion", self.signature_version))
-        query.append(("SignatureNonce", self.signature_nonce))
-        query.append(("Timestamp", self.timestamp))
+        query.append(("SignatureNonce", str(uuid.uuid4())))
+        query.append(("Timestamp", datetime.datetime.utcnow().isoformat("T")))
         query.append(("RegionId", self.region_id))
         query.append(("Action", self.action))
         query.append(("SignName", self.sign))

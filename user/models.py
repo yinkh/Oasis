@@ -211,12 +211,12 @@ class TelVerify(models.Model):
             self.is_success = True
             self.failure_reason = ''
             self.save()
-            return None
+            return True, None
         except SmsError as e:
             self.is_success = False
             self.failure_reason = e.message
             self.save()
-            return e.message
+            return False, e.message
 
     @staticmethod
     def generate_verification_code():

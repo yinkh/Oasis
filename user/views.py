@@ -304,11 +304,12 @@ class UserViewSet(ModelViewSet):
                 tel_verify.send_time = timezone.now()
                 tel_verify.save()
                 # 发送短信
-                failure_reason = tel_verify.send_sms()
-                if failure_reason:
-                    return error_response(5, failure_reason)
-                else:
+                is_success, message = tel_verify.send_sms()
+                if is_success:
                     return success_response('发送成功')
+                else:
+                    logger.error('短信发送失败 原因：{}'.format(message))
+                    return error_response(5, message)
             else:
                 return error_response(4, '请输入合法号码')
         except KeyError as e:
