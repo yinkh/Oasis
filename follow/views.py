@@ -23,6 +23,11 @@ class FollowViewSet(ListModelMixin, GenericViewSet):
     ordering_fields = '__all__'
     search_fields = ('username', 'tel', 'nickname')
 
+    # 空列表
+    # override /follow/
+    def list(self, request, *args, **kwargs):
+        return success_response('')
+
     # 关注某用户
     # url: /follow/[user_id]/follow/
     # Return -----------------------------------

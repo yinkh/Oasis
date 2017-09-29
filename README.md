@@ -8,7 +8,15 @@
 		Authorization：Token xxx
 - 站点[Oasis](http://60.205.186.74)上DRF的Session认证已关闭，导致可视化浏览界面无法直接使用，如需使用请下载Chrome插件[modheader](https://chrome.google.com/webstore/detail/modheader/idgpnmonknjnojddfkpgkljpfnnfcklj)，并为浏览器配置对应的请求头部进行查看。
 
-- 所有列表接口均可在路径后加载page _size=x参数来调整每页显示个数，如访问[http://60.205.186.74/user/?page_size=1](http://60.205.186.74/user/?page_size=1)将返回每页为1个用户的列表。需要特别注意，page _size=0时将返回未分页的列表。
+- 对于所有列表接口，如url为`/list/`:
+
+	- 希望以性别升序、ID降序排列，请求url为`/user/?ordering=gender,-id`;
+	- 希望得到性别为男的列表，请求url为`/user/?gender=1`；
+	- 希望搜索用户时，请求url为`/user/?search=xxx`；
+	- 希望每页显示10条数据，请求url为`/user/?page_size=10`；
+	- 希望访问未分页的列表，请求url为`/user/?page_size=0`；
+	- 希望访问列表的第二页，请求url为`/user/?page=2`；
+	- 排序、过滤、检索、每页个数、页数条件可以混合使用，请求url可为`/user/?ordering=gender,-id&gender=1&search=xxx&page_size=10&page=2`；
 
 
 ## 配置相关

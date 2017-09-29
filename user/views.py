@@ -15,8 +15,11 @@ from common.response import success_response, error_response
 from common.viewset import ModelViewSet, CreateModelMixin, HumanizationSerializerErrorsMixin, GenericViewSet
 from common.exception import VerifyError
 
+from friend.models import Friend
+
 from .serializers import *
 from .filters import *
+from .signals import *
 from .utils import *
 
 logger = logging.getLogger("info")
@@ -59,7 +62,7 @@ class SmsRateThrottle(UserRateThrottle):
 
 # 用户
 class UserViewSet(ModelViewSet):
-    queryset = User.objects.all()
+    queryset = User.objects.none()
     serializer_class = UserCreateSerializer
     serializer_classes = {
         'create': UserCreateSerializer,
@@ -80,6 +83,15 @@ class UserViewSet(ModelViewSet):
         elif self.action in ('update', 'partial_update'):
             self.permission_classes = [IsAuthenticated, IsSelf, ]
         return super(self.__class__, self).get_permissions()
+
+    def get_queryset(self):
+        if self.request.user.is_authenticated:
+            # 拉黑我的人
+            black_list = Friend.objects.filter(to_user=self.request.user, is_block=True).all()
+            # 不可见拉黑我的人
+            return User.objects.exclude(id__in=[black.from_user.id for black in black_list])
+        else:
+            return self.queryset
 
     # override POST /user/
     # 用户注册
@@ -160,8 +172,8 @@ class UserViewSet(ModelViewSet):
                     # 更新登陆时间
                     user.last_login = timezone.now()
                     user.save()
-                    data = {'id': user.id, 'token': user.get_token(), 'name': user.get_full_name(),
-                            'portal': request.build_absolute_uri(user.get_portrait())}
+                    data = {'id': user.id, 'token': user.get_token(), 'im_token': user.get_im_token(),
+                            'name': user.get_full_name(), 'portal': request.build_absolute_uri(user.get_portrait())}
                     return success_response(data)
                 else:
                     return error_response(4, '该账号未激活')
@@ -316,6 +328,13 @@ class UserViewSet(ModelViewSet):
             return error_response(1, '获取参数{}失败'.format(e.__context__))
         except Exception as e:
             return error_response(1, str(e))
+
+    @list_route(methods=['GET'])
+    def refresh_im_token(self, request):
+        if request.user.refresh_im_token():
+            return success_response({'im_token': request.user.get_im_token()})
+        else:
+            return error_response(1, '刷新失败,请稍后再试。')
 
     # 查看用户是否存在
     # Receive ----------------------------------

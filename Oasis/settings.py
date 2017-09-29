@@ -129,6 +129,10 @@ DEFAULT_FILE_STORAGE = 'common.storage.AliyunMediaStorage'
 SMS_ID = "LTAICBBycK9mbE9g"
 SMS_SECRET = "ohU9KJnc17E8QpRyzK9QTY7i5s2Qxj"
 
+# 融云IM配置
+IM_KEY = 'k51hidwqknnkb'
+IM_SECRET = 'Ff30v0CPgU'
+
 # REST_FRAMEWORK设置
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (

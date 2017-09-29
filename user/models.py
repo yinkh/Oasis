@@ -15,6 +15,11 @@ from common.models import Base
 from common.utils import get_time_filename, send_sms
 from common.exception import SmsError
 
+from rongcloud import RongCloud
+
+# 融云实例
+im = RongCloud(settings.IM_KEY, settings.IM_SECRET)
+
 
 def get_file_path(instance, filename):
     return 'user/{}'.format(get_time_filename(filename))
@@ -79,6 +84,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     # 个人简介
     introduction = models.TextField(blank=True,
                                     verbose_name=u'个人简介')
+    # 融云IM Token
+    im_token = models.TextField(null=True,
+                                blank=True,
+                                verbose_name=u'融云IM Token')
     # 控制该用户是否可以登录admin site
     is_staff = models.BooleanField(_('staff status'),
                                    default=False, )
@@ -132,6 +141,27 @@ class User(AbstractBaseUser, PermissionsMixin):
         payload = jwt_payload_handler(self)
         token = jwt_encode_handler(payload)
         return token
+
+    def get_im_token(self):
+        if self.im_token:
+            return self.im_token
+        else:
+            self.refresh_im_token()
+            return self.im_token
+
+    def refresh_im_token(self):
+        """
+        获取IM Token  用user_id作为注册融云的id
+        :return: True/False
+        """
+        # API更新后调用.get()方法后获取到的才是返回的dict
+        result = im.User.getToken(self.id, self.username, self.get_portrait()).result
+        if 'code' in result and result['code'] == 200:
+            if 'token' in result:
+                self.im_token = result['token']
+                self.save()
+                return True
+        return False
 
     def __str__(self):
         return '{} {}'.format(self.id, self.get_full_name())
