@@ -163,6 +163,24 @@ class User(AbstractBaseUser, PermissionsMixin):
                 return True
         return False
 
+    def operate_black_list(self, user_id, operate):
+        """
+        拉黑/取消拉黑
+        :param user_id: 待拉黑/取消拉黑用户ID
+        :param operate: add 拉黑 remove取消拉黑
+        :return: True 操作成功 False 操作失败
+        """
+        if operate == 'add':
+            result = im.User.addBlacklist(self.id, user_id).result
+        elif operate == 'remove':
+            result = im.User.removeBlacklist(self.id, user_id).result
+        else:
+            result = None
+        if result and 'code' in result and result['code'] == 200:
+            return True
+        else:
+            return False
+
     def __str__(self):
         return '{} {}'.format(self.id, self.get_full_name())
 

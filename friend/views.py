@@ -156,8 +156,12 @@ class FriendViewSet(ModelViewSet):
                         friend.is_block = is_block
                         friend.save()
                         if is_block:
+                            # 在融云上同步拉黑
+                            friend.from_user.operate_black_list(friend.to_user.id, 'add')
                             return success_response('拉黑用户成功')
                         else:
+                            # 在融云上同步取消拉黑
+                            friend.from_user.operate_black_list(friend.to_user.id, 'remove')
                             return success_response('取消拉黑成功')
                     else:
                         return error_response(4, '参数错误(请输入合法布尔值)')

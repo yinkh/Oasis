@@ -329,6 +329,9 @@ class UserViewSet(ModelViewSet):
         except Exception as e:
             return error_response(1, str(e))
 
+    # 刷新用户im_token
+    # Return -----------------------------------
+    # 200 新im_token 400-1 刷新失败
     @list_route(methods=['GET'])
     def refresh_im_token(self, request):
         if request.user.refresh_im_token():
