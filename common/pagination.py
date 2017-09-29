@@ -70,8 +70,8 @@ class Pagination(PageNumberPagination):
     def get_paginated_response(self, data):
         """
         count 总条数
-        num_pages 总页数
-        page_num 页码
+        page_num 总页数
+        page_no 页码
         :param data: 
         :return: 
         """
