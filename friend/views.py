@@ -218,5 +218,8 @@ class FriendViewSet(ModelViewSet):
             return error_response(1, '无此权限')
 
     def perform_destroy(self, instance):
+        if instance.is_block:
+            # 在融云上同步取消拉黑
+            instance.from_user.operate_black_list(instance.to_user.id, 'remove')
         instance.is_abandon = True
         instance.save()
