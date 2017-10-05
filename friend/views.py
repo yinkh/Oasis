@@ -87,6 +87,40 @@ class FriendViewSet(ModelViewSet):
         except Exception as e:
             return error_response(1, str(e))
 
+    @list_route(methods=['GET'],permission_classes=[])
+    def push(self, request):
+        import jpush
+        app_key = u'5dc79b47ec6653db7233b149'
+        master_secret = u'd2a89afb0b1251ea19f7b0d5'
+        _jpush = jpush.JPush(app_key, master_secret)
+
+        push = _jpush.create_push()
+
+        from jpush.common import Unauthorized, APIConnectionException, JPushFailure
+
+        device = _jpush.create_device()
+
+        reg_id = '090c1f59f89'
+        entity = jpush.device_tag("test")
+        info = device.set_deviceinfo(reg_id, entity)
+        print(info)
+        # if you set the logging level to "DEBUG",it will show the debug logging.
+        _jpush.set_logging("DEBUG")
+        push.audience = jpush.audience(
+            jpush.tag('test'),
+
+        )
+        push.notification = jpush.notification(alert="hello python jpush api")
+        push.platform = jpush.all_
+        try:
+            response = push.send()
+            print(response)
+        except (Unauthorized, APIConnectionException, JPushFailure) as e:
+            print(str(e))
+        except Exception as e:
+            print(str(e))
+        return success_response('')
+
     # override GET /friend/
     # 我->B 返回B的集合
     # 查看我的好友列表
