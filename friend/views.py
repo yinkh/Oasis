@@ -170,7 +170,7 @@ class FriendViewSet(ModelViewSet):
     # Return -----------------------------------
     # 200 修改成功/处理成功
     # 400-1 数据格式错误 400-2 该好友记录不存在
-    # 400-3 无此权限 400-4 参数错误
+    # 400-3 无此权限 400-4 参数错误 400-5 不可再次处理该请求
     def update(self, request, *args, **kwargs):
         friend = self.get_object()
         try:

@@ -1,6 +1,6 @@
 # 好友状态
 class FriendState(object):
-    # 待处理
+    # 无关系
     Unrelated = 0
     # 待处理
     Pending = 1

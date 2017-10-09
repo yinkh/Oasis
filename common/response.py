@@ -10,7 +10,10 @@ def success_response(data):
     :param data:
     :return:
     """
-    return Response(data=data, status=status.HTTP_200_OK)
+    if isinstance(data, dict):
+        return Response(data=data, status=status.HTTP_200_OK)
+    else:
+        return Response(data={'data': data}, status=status.HTTP_200_OK)
 
 
 def error_response(code, data):
