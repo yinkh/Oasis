@@ -75,11 +75,11 @@ class Pagination(PageNumberPagination):
         :param data: 
         :return: 
         """
-        return Response(OrderedDict([
+        return Response({'code': 0, 'msg': '', 'data': OrderedDict([
             ('count', self.page.paginator.count),
             ('page_num', self.page.paginator.num_pages),
             ('page_no', int(self.page_number)),
             ('next', self.get_next_link() if self.get_next_link() else ''),
             ('previous', self.get_previous_link() if self.get_previous_link() else ''),
             ('results', data)
-        ]))
+        ])})

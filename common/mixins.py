@@ -7,7 +7,6 @@ which allows mixin classes to be composed in interesting ways.
 from __future__ import unicode_literals
 import ast
 from django.core.exceptions import FieldDoesNotExist
-from rest_framework.response import Response
 from common.response import success_response, error_response
 
 
@@ -70,7 +69,7 @@ class RetrieveModelMixin(object):
         instance = self.get_object()
         self.before_retrieve(instance)
         serializer = self.get_serializer(instance)
-        return Response(serializer.data)
+        return success_response(serializer.data)
 
     def before_retrieve(self, instance):
         pass

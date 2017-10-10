@@ -1,6 +1,7 @@
 from rest_framework.response import Response
 from rest_framework import status
 import logging
+
 logger = logging.getLogger("info")
 
 
@@ -10,10 +11,10 @@ def success_response(data):
     :param data:
     :return:
     """
-    if isinstance(data, dict):
-        return Response(data=data, status=status.HTTP_200_OK)
+    if isinstance(data, dict) or isinstance(data, list):
+        return Response(data={'data': data, 'code': 0, 'msg': ''}, status=status.HTTP_200_OK)
     else:
-        return Response(data={'data': data}, status=status.HTTP_200_OK)
+        return Response(data={'data': '', 'code': 0, 'msg': data}, status=status.HTTP_200_OK)
 
 
 def error_response(code, data):
@@ -24,5 +25,4 @@ def error_response(code, data):
     :return: Response
     """
     logger.error("code: %d, data: %s" % (code, data))
-    return Response(data={'code': code, 'data': data}, status=status.HTTP_400_BAD_REQUEST)
-
+    return Response(data={'code': code, 'data': '', 'msg': data}, status=status.HTTP_400_BAD_REQUEST)

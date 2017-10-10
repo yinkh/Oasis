@@ -179,8 +179,10 @@ class UserViewSet(ModelViewSet):
                     return error_response(4, '该账号未激活')
             else:
                 return error_response(2, '用户名或密码错误')
+        except KeyError as e:
+            return error_response(1, '获取参数{}失败'.format(e.__context__))
         except Exception as e:
-            return error_response(1, '获取参数%s失败' % e)
+            return error_response(1, str(e))
 
     # 用户退出登陆
     # Return -----------------------------------
