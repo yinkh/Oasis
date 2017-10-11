@@ -5,26 +5,26 @@ from common.utils import get_time_filename
 from common.models import Base
 
 
-def get_photo_path(instance, filename):
-    return 'photo/{}'.format(get_time_filename(filename))
+def get_image_path(instance, filename):
+    return 'image/{}'.format(get_time_filename(filename))
 
 
-# 照片
-class Photo(models.Model):
+# 图片
+class Image(models.Model):
     # 拥有者
     user = models.ForeignKey('user.User',
                              related_name='photo',
                              on_delete=models.CASCADE,
                              verbose_name='用户')
-    image = models.ImageField(upload_to=get_photo_path,
+    image = models.ImageField(upload_to=get_image_path,
                               verbose_name='图片')
     # 创建时间
     create_time = models.DateTimeField(auto_now_add=True,
                                        verbose_name='创建时间')
 
     class Meta:
-        verbose_name = '照片'
-        verbose_name_plural = '照片'
+        verbose_name = '图片'
+        verbose_name_plural = '图片'
 
     def __str__(self):
         return self.image.name
@@ -56,14 +56,22 @@ class Post(Base):
     # 详情
     content = models.TextField(null=True,
                                verbose_name=u'详情')
+    # 类型
+    CATEGORY = {
+        0: u'视频',
+        1: u'图片',
+    }
+    category = models.PositiveIntegerField(choices=CATEGORY.items(),
+                                           default=0,
+                                           verbose_name=u'类型')
     # 视频
     video = models.FileField(upload_to=get_video_path,
                              blank=True,
                              verbose_name=u'视频')
-    # 照片
-    photos = models.ManyToManyField('post.Photo',
+    # 图片
+    images = models.ManyToManyField('post.Image',
                                     blank=True,
-                                    verbose_name='照片')
+                                    verbose_name='图片')
     # 时间
     time = models.DateTimeField(null=True,
                                 default=timezone.now,
