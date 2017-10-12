@@ -44,6 +44,15 @@ class PostListSerializer(DynamicFieldsModelSerializer):
     user = UserListSerializer(read_only=True)
     images = ImageListSerializer(read_only=True, many=True)
 
+    def to_representation(self, instance):
+        """视频只返回video 图片只返回images"""
+        data = super(PostListSerializer, self).to_representation(instance)
+        if instance.category == 0:
+            data.pop('images', None)
+        elif instance.category == 1:
+            data.pop('video', None)
+        return data
+
     class Meta:
         model = Post
         fields = ('id', 'user', 'status', 'title', 'content', 'category', 'video', 'images', 'time', 'place',

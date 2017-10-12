@@ -38,3 +38,21 @@ class PostViewSet(ModelViewSet):
     filter_class = PostFilter
     ordering_fields = '__all__'
     search_fields = ('title', 'content', 'user__nickname')
+
+    """我的帖子列表"""
+    def list(self, request, *args, **kwargs):
+        queryset = self.queryset.filter(user=request.user)
+        return self.list_queryset(request, queryset, *args, **kwargs)
+
+    """故事列表"""
+    @list_route(methods=['GET'])
+    def story_list(self, request, *args, **kwargs):
+        my_friends = [friend.to_user for friend in Friend.objects.filter(from_user=request.user, is_block=False).all()]
+        queryset = self.queryset.filter(user__in=my_friends, status=1).all()
+        return self.list_queryset(request, queryset, *args, **kwargs)
+
+    """帖子列表"""
+    @list_route(methods=['GET'])
+    def post_list(self, request, *args, **kwargs):
+        queryset = self.queryset.filter(status=0).all()
+        return self.list_queryset(request, queryset, *args, **kwargs)
