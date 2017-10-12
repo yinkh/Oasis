@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils import timezone
 
-from common.utils import get_time_filename
+from common.utils import get_time_filename, validate_image_size, validate_video_size
 from common.models import Base
 
 
@@ -17,6 +17,7 @@ class Image(models.Model):
                              on_delete=models.CASCADE,
                              verbose_name='用户')
     image = models.ImageField(upload_to=get_image_path,
+                              validators=[validate_image_size],
                               verbose_name='图片')
     # 创建时间
     create_time = models.DateTimeField(auto_now_add=True,
@@ -66,6 +67,7 @@ class Post(Base):
                                            verbose_name=u'类型')
     # 视频
     video = models.FileField(upload_to=get_video_path,
+                             validators=[validate_video_size],
                              blank=True,
                              verbose_name=u'视频')
     # 图片

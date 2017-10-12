@@ -1,5 +1,8 @@
 import os
 from datetime import datetime
+
+from django.core.exceptions import ValidationError
+
 from .sms import AliYunSMS
 from .exception import SmsError
 import logging
@@ -66,8 +69,6 @@ def str2bool_exc(value):
 
 
 def send_sms(phone_number, template_code, template_param):
-    # ALISMS_SIGN = "Oasis绿洲"
-    # ALISMS_TPL_REGISTER = "SMS_98365026"
     try:
         response = AliYunSMS().send_single(phone_number, "Oasis绿洲", template_code, template_param)
 
@@ -83,3 +84,23 @@ def send_sms(phone_number, template_code, template_param):
             raise SmsError('连接短信服务器失败')
     except Exception as e:
         raise SmsError(str(e))
+
+
+def validate_image_size(value):
+    """
+    限制图片文件大小为2M 2M=2*1024KB=2*1024*1024Byte (Byte既字节)
+    :param value:文件实例
+    :return: raise 文件大小超过2MB
+    """
+    if value.size > 2097152:
+        raise ValidationError(u'文件大小超过2MB')
+
+
+def validate_video_size(value):
+    """
+    限制视频文件大小为20M 20M=20*1024KB=20*1024*1024Byte (Byte既字节)
+    :param value:文件实例
+    :return: raise 文件大小超过20MB
+    """
+    if value.size > 20971520:
+        raise ValidationError(u'文件大小超过20MB')

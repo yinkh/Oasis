@@ -19,7 +19,7 @@ from friend.models import Friend
 
 from .serializers import *
 from .filters import *
-from .signals import *
+# from .signals import *
 from .utils import *
 
 logger = logging.getLogger("info")
@@ -116,8 +116,11 @@ class UserViewSet(ModelViewSet):
 
             if serializer.is_valid():
                 # 注册一个真实用户
-                serializer.create(serializer.validated_data)
-                return success_response('注册成功')
+                user = serializer.create(serializer.validated_data)
+                user.refresh_im_token()
+                data = {'id': user.id, 'token': user.get_token(), 'im_token': user.get_im_token(),
+                        'name': user.get_full_name(), 'portal': request.build_absolute_uri(user.get_portrait())}
+                return success_response(data)
             else:
                 return error_response(1, self.humanize_errors(serializer))
         except VerifyError as e:

@@ -19,22 +19,22 @@ from friend.models import Friend
 
 from .models import *
 from .serializers import *
+from .filters import *
 
 logger = logging.getLogger("info")
 
 
 # 帖子
 class PostViewSet(ModelViewSet):
-    queryset = Post.objects.none()
-    serializer_class = UserCreateSerializer
+    queryset = Post.objects.all()
+    serializer_class = PostListSerializer
     serializer_classes = {
-        'create': UserCreateSerializer,
-        'list': UserListSerializer,
-        'retrieve': UserSerializer,
-        'update': UserModifySerializer,
+        'create': PostModifySerializer,
+        'list': PostListSerializer,
+        'retrieve': PostSerializer,
+        'update': PostModifySerializer,
     }
-    # 403 错误均为未登录
     permission_classes = (IsAuthenticated,)
-    filter_class = UserFilter
+    filter_class = PostFilter
     ordering_fields = '__all__'
-    search_fields = ('username', 'tel', 'nickname')
+    search_fields = ('title', 'content', 'user__nickname')

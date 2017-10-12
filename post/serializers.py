@@ -1,8 +1,32 @@
-from django.contrib.auth import password_validation
-from django.contrib.auth.hashers import make_password
-
 from common.serializers import *
+from user.serializers import UserListSerializer
 from .models import *
+
+
+# --------------------------------- 图片 ---------------------------------
+# 创建图片
+class ImageModifySerializer(ModelSerializer):
+
+    class Meta:
+        model = Image
+        fields = ('user', 'image')
+
+
+# 列表图片
+class ImageListSerializer(ModelSerializer):
+
+    class Meta:
+        model = Image
+        fields = ('user', 'image', 'create_time')
+
+
+# 图片详情
+class ImageSerializer(ModelSerializer):
+    user = UserListSerializer(read_only=True)
+
+    class Meta:
+        model = Image
+        fields = ('user', 'image', 'create_time')
 
 
 # --------------------------------- 帖子 ---------------------------------
@@ -15,64 +39,23 @@ class PostModifySerializer(ModelSerializer):
         extra_kwargs = {'user': {'required': False}}
 
 
-# 用户信息
-class UserExpandSerializer(DynamicFieldsModelSerializer):
-    password = serializers.CharField(max_length=128, required=False)
-
-    def validate_password(self, value):
-        if 'action' in self.context:
-            if self.context['action'] == 'update':
-                # 验证密码格式
-                password_validation.validate_password(value)
-                # 重新生成密码
-                value = make_password(value)
-        return value
-
-    # 设置tel
-    def validate_tel(self, value):
-        if is_tel(value):
-            return value
-        else:
-            raise serializers.ValidationError("请输入正确的手机号码")
-
-    def create(self, validated_data):
-        if 'username' in validated_data:
-            username = validated_data.pop('username')
-        else:
-            username = random_username()
-
-        user = User.objects.create_user(username=username, **validated_data)
-        return user
+# 列表帖子
+class PostListSerializer(DynamicFieldsModelSerializer):
+    user = UserListSerializer(read_only=True)
+    images = ImageListSerializer(read_only=True, many=True)
 
     class Meta:
-        model = User
-        fields = ('username', 'password', 'gender', 'nickname', 'birth_day', 'email',
-                  'tel', 'fixed_tel', 'qq', 'we_chat', 'contact_address',)
-        extra_kwargs = {'username': {'required': False}}
+        model = Post
+        fields = ('id', 'user', 'status', 'title', 'content', 'category', 'video', 'images', 'time', 'place',
+                  'location')
 
 
-# 列表用户
-class UserListSerializer(DynamicFieldsModelSerializer):
-    portrait = serializers.SerializerMethodField()
-
-    class Meta:
-        model = User
-        fields = ('id', 'username', 'portrait', 'gender', 'get_gender_display', 'get_full_name')
-
-    def get_portrait(self, instance):
-        request = self.context.get('request')
-        return request.build_absolute_uri(instance.get_portrait())
-
-
-# 全部信息
-class UserSerializer(DynamicFieldsModelSerializer):
-    portrait = serializers.SerializerMethodField()
+# 帖子详情
+class PostSerializer(DynamicFieldsModelSerializer):
+    user = UserListSerializer(read_only=True)
+    images = ImageListSerializer(read_only=True, many=True)
 
     class Meta:
-        model = User
-        fields = ('id', 'username', 'tel', 'portrait', 'gender', 'nickname', 'birth_day', 'email',
-                  'location', 'introduction', 'last_login', 'get_gender_display', 'get_full_name')
-
-    def get_portrait(self, instance):
-        request = self.context.get('request')
-        return request.build_absolute_uri(instance.get_portrait())
+        model = Post
+        fields = ('id', 'user', 'status', 'title', 'content', 'category', 'video', 'images', 'time', 'place',
+                  'location', 'get_status_display', 'get_category_display')
