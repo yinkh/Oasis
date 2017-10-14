@@ -92,7 +92,9 @@ class UpdateModelMixin(object):
                 # forcibly invalidate the prefetch cache on the instance.
                 instance._prefetched_objects_cache = {}
 
-            return success_response(serializer.data)
+            return success_response(self.serializer_classes['retrieve'](instance,
+                                                                        context=self.get_serializer_context()
+                                                                        ).data)
         else:
             return error_response(1, self.humanize_errors(serializer))
 

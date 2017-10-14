@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from django.core.exceptions import ValidationError
 
 from common.utils import get_time_filename, validate_image_size, validate_video_size
 from common.models import Base
@@ -28,7 +29,7 @@ class Image(models.Model):
         verbose_name_plural = '图片'
 
     def __str__(self):
-        return self.image.name
+        return '{} {}'.format(self.id, self.image.name)
 
 
 def get_video_path(instance, filename):
@@ -63,7 +64,6 @@ class Post(Base):
         1: u'图片',
     }
     category = models.PositiveIntegerField(choices=CATEGORY.items(),
-                                           default=0,
                                            verbose_name=u'类型')
     # 视频
     video = models.FileField(upload_to=get_video_path,
@@ -92,6 +92,14 @@ class Post(Base):
     class Meta:
         verbose_name = '帖子'
         verbose_name_plural = '帖子'
+
+    # def clean(self):
+    #     images = self.cleaned_data.get('images')
+    #     print(images)
+    #     if self.category == 0 and self.images.count() != 0:
+    #         raise ValidationError({'images': '视频不接收多图'})
+    #     elif self.category == 1 and self.video:
+    #         raise ValidationError({'video': '多图不接收视频'})
 
     def __str__(self):
         return '{} {}'.format(self.id, self.title)

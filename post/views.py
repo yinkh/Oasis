@@ -39,6 +39,20 @@ class PostViewSet(ModelViewSet):
     ordering_fields = '__all__'
     search_fields = ('title', 'content', 'user__nickname')
 
+    # def create(self, request, *args, **kwargs):
+    #     self.before_create()
+    #     serializer = self.get_serializer(data=request.data)
+    #     if serializer.is_valid():
+    #         instance = self.perform_create(serializer)
+    #         return success_response(self.serializer_classes['retrieve'](instance,
+    #                                                                     context=self.get_serializer_context()
+    #                                                                     ).data)
+    #     else:
+    #         return error_response(1, self.humanize_errors(serializer))
+
+    def perform_create(self, serializer):
+        return serializer.save(user=self.request.user)
+
     """我的帖子列表"""
     def list(self, request, *args, **kwargs):
         queryset = self.queryset.filter(user=request.user)

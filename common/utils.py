@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 
+from django.http import QueryDict
 from django.core.exceptions import ValidationError
 
 from .sms import AliYunSMS
@@ -25,6 +26,18 @@ def get_time_filename(filename):
     # 合成文件名
     filename = os.path.join(d, current_time + ext)
     return filename
+
+
+def get_list(_dict, key):
+    """
+    :param _dict: QueryDict or dict
+    :param key: list 键名
+    :return: _dict中key对应的list
+    """
+    if isinstance(_dict, QueryDict):
+        return _dict.getlist(key)
+    else:
+        return _dict[key]
 
 
 def isdigit(string):
@@ -93,7 +106,7 @@ def validate_image_size(value):
     :return: raise 文件大小超过2MB
     """
     if value.size > 2097152:
-        raise ValidationError(u'文件大小超过2MB')
+        raise ValidationError(u'文件{}大小超过2MB'.format(value.name))
 
 
 def validate_video_size(value):
@@ -103,4 +116,4 @@ def validate_video_size(value):
     :return: raise 文件大小超过20MB
     """
     if value.size > 20971520:
-        raise ValidationError(u'文件大小超过20MB')
+        raise ValidationError(u'文件{}大小超过20MB'.format(value.name))
