@@ -130,7 +130,6 @@ class PostListSerializer(ModelSerializer):
 class PostSerializer(ModelSerializer):
     user = UserListSerializer(read_only=True)
     images = ImageListSerializer(read_only=True, many=True)
-    likes = UserListSerializer(read_only=True, many=True)
 
     def to_representation(self, instance):
         """视频只返回video 图片只返回images"""
@@ -144,4 +143,4 @@ class PostSerializer(ModelSerializer):
     class Meta:
         model = Post
         fields = ('id', 'user', 'status', 'title', 'content', 'category', 'video', 'images', 'time', 'place',
-                  'location', 'likes', 'get_status_display', 'get_category_display')
+                  'location', 'get_likes_count', 'get_status_display', 'get_category_display')

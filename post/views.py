@@ -98,3 +98,10 @@ class PostViewSet(ModelViewSet):
         instance = self.get_object()
         instance.likes.remove(request.user)
         return success_response('取消点赞成功')
+
+    # 帖子点赞用户列表(未分页)
+    @detail_route(methods=['GET'])
+    def likes_list(self, request, pk, *args, **kwargs):
+        instance = self.get_object()
+        serializer = UserListSerializer(instance.likes, many=True, context=self.get_serializer_context())
+        return success_response(serializer.data)
