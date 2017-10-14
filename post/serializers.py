@@ -16,7 +16,7 @@ class ImageModifySerializer(ModelSerializer):
 class ImageListSerializer(ModelSerializer):
     class Meta:
         model = Image
-        fields = ('id', 'user', 'image', 'create_time')
+        fields = ('id', 'image')
 
 
 # 图片详情
@@ -70,7 +70,6 @@ class PostModifySerializer(ModelSerializer):
         return data
 
     def create(self, validated_data):
-        print(validated_data)
         images = validated_data.pop('images')
         post = Post.objects.create(**validated_data)
         if post.category == 1:
@@ -81,7 +80,6 @@ class PostModifySerializer(ModelSerializer):
 
     # images新图片 images_delete待删除图片ID列表
     def update(self, instance, validated_data):
-        print(validated_data)
         # 从validated_date移除images为setattr方法做准备
         if 'images' in validated_data:
             images = validated_data.pop('images')
@@ -125,13 +123,14 @@ class PostListSerializer(ModelSerializer):
     class Meta:
         model = Post
         fields = ('id', 'user', 'status', 'title', 'content', 'category', 'video', 'images', 'time', 'place',
-                  'location')
+                  'location', 'get_likes_count', 'get_status_display', 'get_category_display')
 
 
 # 帖子详情
 class PostSerializer(ModelSerializer):
     user = UserListSerializer(read_only=True)
     images = ImageListSerializer(read_only=True, many=True)
+    likes = UserListSerializer(read_only=True, many=True)
 
     def to_representation(self, instance):
         """视频只返回video 图片只返回images"""
@@ -145,4 +144,4 @@ class PostSerializer(ModelSerializer):
     class Meta:
         model = Post
         fields = ('id', 'user', 'status', 'title', 'content', 'category', 'video', 'images', 'time', 'place',
-                  'location', 'get_status_display', 'get_category_display')
+                  'location', 'likes', 'get_status_display', 'get_category_display')

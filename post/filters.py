@@ -12,4 +12,5 @@ class PostFilter(FilterSet):
             'content': ['exact', 'icontains'],
             'category': ['exact'],
             'time': ['gte', 'lte'],
+            'likes': ['exact'],
         }

@@ -88,18 +88,18 @@ class Post(Base):
                                 null=True,
                                 blank=True,
                                 verbose_name='地点-经纬度')
+    # 点赞用户
+    likes = models.ManyToManyField('user.User',
+                                   blank=True,
+                                   verbose_name='点赞用户')
 
     class Meta:
         verbose_name = '帖子'
         verbose_name_plural = '帖子'
 
-    # def clean(self):
-    #     images = self.cleaned_data.get('images')
-    #     print(images)
-    #     if self.category == 0 and self.images.count() != 0:
-    #         raise ValidationError({'images': '视频不接收多图'})
-    #     elif self.category == 1 and self.video:
-    #         raise ValidationError({'video': '多图不接收视频'})
+    # 点赞总数
+    def get_likes_count(self):
+        return self.likes.count()
 
     def __str__(self):
         return '{} {}'.format(self.id, self.title)

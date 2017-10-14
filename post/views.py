@@ -1,12 +1,12 @@
 import logging
-
 from datetime import datetime
+
+from django.db.models import Q
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
-from django.db.models import Q
-from rest_framework.decorators import list_route
+from rest_framework.decorators import list_route, detail_route
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.throttling import UserRateThrottle
 
@@ -54,6 +54,19 @@ class PostViewSet(ModelViewSet):
         instance.is_abandon = True
         instance.save()
 
+    def get_queryset(self):
+        # 范围为 公开 好友的故事 我的帖子
+        queryset = Post.objects.filter(status=0).all() | self.get_queryset_friend() | \
+                   Post.objects.filter(user=self.request.user).all()
+        return queryset
+
+    # 好友的故事
+    def get_queryset_friend(self):
+        my_friends = [friend.to_user for friend in
+                      Friend.objects.filter(from_user=self.request.user, is_block=False).all()]
+        queryset = self.queryset.filter(user__in=my_friends, status=1).all()
+        return queryset
+
     # 我的帖子列表
     def list(self, request, *args, **kwargs):
         queryset = self.queryset.filter(user=request.user)
@@ -62,12 +75,26 @@ class PostViewSet(ModelViewSet):
     # 故事列表
     @list_route(methods=['GET'])
     def story_list(self, request, *args, **kwargs):
-        my_friends = [friend.to_user for friend in Friend.objects.filter(from_user=request.user, is_block=False).all()]
-        queryset = self.queryset.filter(user__in=my_friends, status=1).all()
-        return self.list_queryset(request, queryset, *args, **kwargs)
+        return self.list_queryset(request, self.get_queryset_friend(), *args, **kwargs)
 
     # 帖子列表
     @list_route(methods=['GET'])
     def post_list(self, request, *args, **kwargs):
         queryset = self.queryset.filter(status=0).all()
         return self.list_queryset(request, queryset, *args, **kwargs)
+
+    # 点赞
+    @detail_route(methods=['GET'])
+    def like(self, request, pk, *args, **kwargs):
+        instance = self.get_object()
+        instance.likes.add(request.user)
+        return success_response('点赞成功')
+
+    # 取消点赞
+    @detail_route(methods=['GET'])
+    def unlike(self, request, pk, *args, **kwargs):
+        # 范围为我点过赞的帖子
+        self.queryset = request.user.post_set.all()
+        instance = self.get_object()
+        instance.likes.remove(request.user)
+        return success_response('取消点赞成功')
