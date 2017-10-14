@@ -40,19 +40,33 @@ class PostModifySerializer(ModelSerializer):
     def validate(self, data):
         if self.instance is None:
             category = data['category']
+            if category == 0:
+                if 'images' in data and len(data['images']) != 0:
+                    raise ValidationError({'images': '视频不接收多图'})
+                elif 'video' not in data:
+                    raise ValidationError({'video': '视频必传'})
+            elif category == 1:
+                if 'video' in data:
+                    raise ValidationError({'video': '多图不接收视频'})
+                elif 'images' not in data or len(data['images']) == 0:
+                    raise ValidationError({'images': '多图必传'})
         else:
             category = self.instance.category
-
-        if category == 0:
-            if 'images' in data and len(data['images']) != 0:
-                raise ValidationError({'images': '视频不接收多图'})
-            elif 'video' not in data:
-                raise ValidationError({'video': '视频必传'})
-        elif category == 1:
-            if 'video' in data:
-                raise ValidationError({'video': '多图不接收视频'})
-            elif 'images' not in data or len(data['images']) == 0:
-                raise ValidationError({'images': '多图必传'})
+            if category == 0:
+                if 'images' in data and len(data['images']) != 0:
+                    raise ValidationError({'images': '视频不接收多图'})
+            elif category == 1:
+                if 'video' in data:
+                    raise ValidationError({'video': '多图不接收视频'})
+                # 判断图片是否属于本帖子、是否有权删除
+                image_d_errors = []
+                for image_d in Image.objects.filter(id__in=get_list(self.context['request'].data, 'images_delete')):
+                    if image_d not in self.instance.images.all():
+                        image_d_errors.append('图片(ID:{})不属于本帖子无权删除;'.format(image_d.id))
+                    elif image_d.user != self.instance.user:
+                        image_d_errors.append('图片(ID:{})无权删除;'.format(image_d.id))
+                if len(image_d_errors) != 0:
+                    raise ValidationError({'image': image_d_errors})
         return data
 
     def create(self, validated_data):
