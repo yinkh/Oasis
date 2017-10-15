@@ -10,7 +10,7 @@ from rest_framework.decorators import list_route, detail_route
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.throttling import UserRateThrottle
 
-from common.permissions import IsPostOwnerOrReadOnly
+from common.permissions import IsPostOwnerOrReadOnly, IsCommentOwnerOrReadOnly
 from common.response import success_response, error_response
 from common.viewset import ModelViewSet, CreateModelMixin, HumanizationSerializerErrorsMixin, GenericViewSet
 from common.exception import VerifyError
@@ -105,3 +105,44 @@ class PostViewSet(ModelViewSet):
         instance = self.get_object()
         serializer = UserListSerializer(instance.likes, many=True, context=self.get_serializer_context())
         return success_response(serializer.data)
+
+
+# 评论
+class CommentViewSet(ModelViewSet):
+    queryset = Comment.objects.all()
+    serializer_class = CommentListSerializer
+    serializer_classes = {
+        'create': CommentModifySerializer,
+        'list': CommentListSerializer,
+        'retrieve': CommentSerializer,
+        'update': CommentModifySerializer,
+    }
+    permission_classes = (IsAuthenticated,)
+    page_size = 1
+    filter_class = CommentFilter
+    ordering_fields = '__all__'
+    search_fields = ('text',)
+
+    # 修改、删除需要所有者权限
+    def get_permissions(self):
+        if self.action in ('update', 'partial_update', 'destroy'):
+            self.permission_classes = [IsAuthenticated, IsCommentOwnerOrReadOnly, ]
+        return super(self.__class__, self).get_permissions()
+
+    def get_queryset(self):
+        return self.queryset.filter(user=self.request.user)
+
+    # 限制评论用户
+    def perform_create(self, serializer):
+        return serializer.save(user=self.request.user)
+
+    # 禁止修改
+    def update(self, request, *args, **kwargs):
+        return error_response(1, '禁止修改')
+
+    # 假删除
+    def perform_destroy(self, instance):
+        # 若删除的为父评论 所有的子评论升级为一级评论
+        Comment.objects.filter(parent=instance).update(parent=None)
+        instance.is_abandon = True
+        instance.save()

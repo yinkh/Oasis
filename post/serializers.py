@@ -1,6 +1,7 @@
 from common.serializers import *
 from common.utils import get_time_filename, validate_image_size, validate_video_size, get_list
 from user.serializers import UserListSerializer
+from friend.models import Friend
 from .models import *
 
 
@@ -144,3 +145,48 @@ class PostSerializer(ModelSerializer):
         model = Post
         fields = ('id', 'user', 'status', 'title', 'content', 'category', 'video', 'images', 'time', 'place',
                   'location', 'get_likes_count', 'get_status_display', 'get_category_display')
+
+
+# --------------------------------- 评论 ---------------------------------
+# 创建评论
+class CommentModifySerializer(ModelSerializer):
+    def __init__(self, *args, **kwargs):
+        super(CommentModifySerializer, self).__init__(*args, **kwargs)
+        # 限制有权评论的帖子范围
+        self.fields['post'].queryset = self.get_post_queryset()
+
+    def get_post_queryset(self):
+        # 范围为 公开 好友的故事 我的帖子
+        user = self.context['request'].user
+        my_friends = [friend.to_user for friend in
+                      Friend.objects.filter(from_user=user, is_block=False).all()]
+        queryset_friend = Post.objects.filter(user__in=my_friends, status=1).all()
+        queryset = Post.objects.filter(status=0).all() | queryset_friend | Post.objects.filter(user=user).all()
+        return queryset
+
+    def validate(self, data):
+        instance = self.Meta.model(**data)
+        instance.clean()
+        return data
+
+    class Meta:
+        model = Comment
+        fields = ('post', 'text', 'parent')
+
+
+# 创建评论
+class CommentListSerializer(ModelSerializer):
+    user = UserListSerializer(read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = ('id', 'user', 'post', 'text', 'parent', 'create_time', 'update_time', 'get_likes_count')
+
+
+# 创建评论
+class CommentSerializer(ModelSerializer):
+    user = UserListSerializer(read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = ('id', 'user', 'post', 'text', 'parent', 'create_time', 'update_time', 'get_likes_count')

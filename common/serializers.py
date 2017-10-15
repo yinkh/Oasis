@@ -62,10 +62,8 @@ class ModelSerializer(serializers.ModelSerializer):
             if key is not None:
                 value = field.to_representation(key)
                 # 子对象中有对象为空 依旧序列化
-                # if value is None:
-                #     # Do not serialize empty objects
-                #     print('empty objects')
-                #     continue
+                if value is None:
+                    value = ''
                 # 子对象中有列表为空 依旧序列化 eg:Moment->photos为空依旧要序列化
                 # if isinstance(value, list) and not value:
                 #     # Do not serialize empty lists

@@ -1,5 +1,5 @@
 from django_filters.rest_framework import FilterSet
-from .models import Post
+from .models import *
 
 
 class PostFilter(FilterSet):
@@ -14,3 +14,17 @@ class PostFilter(FilterSet):
             'time': ['gte', 'lte'],
             'likes': ['exact'],
         }
+
+
+class CommentFilter(FilterSet):
+    class Meta:
+        model = Comment
+        fields = {
+            'user': ['exact'],
+            'post': ['exact'],
+            'text': ['exact', 'icontains'],
+            'create_time': ['gte', 'lte'],
+            'update_time': ['gte', 'lte'],
+            'likes': ['exact'],
+        }
+

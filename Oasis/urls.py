@@ -9,7 +9,7 @@ from rest_framework_jwt.views import refresh_jwt_token, verify_jwt_token
 from user.views import UserViewSet, AgreementViewSet
 from friend.views import FriendViewSet
 from follow.views import FollowViewSet
-from post.views import PostViewSet
+from post.views import PostViewSet, CommentViewSet
 
 router = DefaultRouter()
 # 用户
@@ -22,6 +22,8 @@ router.register(r'friend', FriendViewSet)
 router.register(r'follow', FollowViewSet)
 # 帖子
 router.register(r'post', PostViewSet)
+# 评论
+router.register(r'comment', CommentViewSet)
 
 urlpatterns = [
     url(r'^user/refresh_token/$', refresh_jwt_token),

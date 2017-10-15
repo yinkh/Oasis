@@ -40,7 +40,7 @@ def get_video_path(instance, filename):
 class Post(Base):
     # 用户
     user = models.ForeignKey('user.User',
-                             related_name='deed',
+                             related_name='post_user',
                              on_delete=models.CASCADE,
                              verbose_name=u'用户')
     # 状态
@@ -103,3 +103,41 @@ class Post(Base):
 
     def __str__(self):
         return '{} {}'.format(self.id, self.title)
+
+
+# 评论
+class Comment(Base):
+    # 用户
+    user = models.ForeignKey('user.User',
+                             related_name='comment_user',
+                             verbose_name=u'用户')
+    # 帖子
+    post = models.ForeignKey('post.Post',
+                             related_name='comment_post',
+                             verbose_name=u'帖子')
+    # 评论内容
+    text = models.TextField(verbose_name=u'评论内容')
+    # 父评论
+    parent = models.ForeignKey('self',
+                               null=True,
+                               blank=True,
+                               verbose_name=u'父评论')
+    # 点赞用户
+    likes = models.ManyToManyField('user.User',
+                                   blank=True,
+                                   verbose_name='点赞用户')
+
+    class Meta:
+        verbose_name = '评论'
+        verbose_name_plural = '评论'
+
+    def clean(self):
+        if self.parent and self.parent.post != self.post:
+            raise ValidationError({'parent': '父评论所属帖子必须与本评论所属帖子一致'})
+
+    # 点赞总数
+    def get_likes_count(self):
+        return self.likes.count()
+
+    def __str__(self):
+        return '{} {} {}'.format(self.id, self.user, self.post)
