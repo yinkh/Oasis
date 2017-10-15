@@ -63,7 +63,7 @@ class PostViewSet(ModelViewSet):
     # 好友的故事
     def get_queryset_friend(self):
         my_friends = [friend.to_user for friend in
-                      Friend.objects.filter(from_user=self.request.user, is_block=False).all()]
+                      Friend.objects.filter(from_user=self.request.user, is_block=False, is_post_block=False).all()]
         queryset = self.queryset.filter(user__in=my_friends, status=1).all()
         return queryset
 

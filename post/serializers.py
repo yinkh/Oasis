@@ -164,7 +164,7 @@ class CommentModifySerializer(ModelSerializer):
         # 范围为 公开 好友的故事 我的帖子
         user = self.context['request'].user
         my_friends = [friend.to_user for friend in
-                      Friend.objects.filter(from_user=user, is_block=False).all()]
+                      Friend.objects.filter(from_user=user, is_block=False, is_post_block=False).all()]
         queryset_friend = Post.objects.filter(user__in=my_friends, status=1).all()
         queryset = Post.objects.filter(status=0).all() | queryset_friend | Post.objects.filter(user=user).all()
         return queryset

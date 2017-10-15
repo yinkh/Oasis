@@ -9,7 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 from common.viewset import ModelViewSet
 from common.response import success_response, error_response
 from common.constants import FriendState
-from common.utils import isdigit, str2bool
+from common.utils import isdigit, str2bool, get_list
 from user.models import User
 
 from .models import *
@@ -26,6 +26,7 @@ class FriendViewSet(ModelViewSet):
         'list': FriendListSerializer,
         'list_from': FriendFromListSerializer,
         'list_to': FriendToListSerializer,
+        'list_to_with_post': FriendToWithPostListSerializer,
         'retrieve': FriendListSerializer,
         'update': FriendModifySerializer,
     }
@@ -50,6 +51,8 @@ class FriendViewSet(ModelViewSet):
                 return self.serializer_classes['list_from']
             elif self.action == 'list_to':
                 return self.serializer_classes['list_to']
+            elif self.action == 'list_to_with_post':
+                return self.serializer_classes['list_to_with_post']
             return self.serializer_class
 
     # override POST /friend/
@@ -128,6 +131,19 @@ class FriendViewSet(ModelViewSet):
         self.action = 'list_to'
         friends = self.get_queryset().filter(from_user=request.user, state=FriendState.Agree, is_block=False).all()
         return self.list_queryset(request, friends, *args, **kwargs)
+
+    # 带是否禁止看帖状态的好友列表
+    @list_route(methods=['GET'])
+    def list_with_post(self, request, *args, **kwargs):
+        self.action = 'list_to_with_post'
+        friends = self.get_queryset().filter(from_user=request.user, state=FriendState.Agree, is_block=False).all()
+        return self.list_queryset(request, friends, *args, **kwargs)
+
+    # 批量设置禁止看帖好友
+    @list_route(methods=['POST'])
+    def set_post_block(self, request, *args, **kwargs):
+        self.get_queryset().filter(id__in=get_list(request.data, 'post_block_list')).update(is_post_block=True)
+        return success_response('设置成功')
 
     # 查看待处理的和最近一天添加的好友关系
     # A->我 已同意 返回一天内A的集合 添加我的新朋友

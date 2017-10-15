@@ -40,6 +40,15 @@ class FriendToListSerializer(ModelSerializer):
                   'create_time', 'update_time', 'get_state_display')
 
 
+class FriendToWithPostListSerializer(ModelSerializer):
+    to_user = UserListSerializer(read_only=True)
+
+    class Meta:
+        model = Friend
+        fields = ('id', 'from_user', 'to_user', 'state', 'remark', 'say_hi', 'agree_time', 'is_post_block',
+                  'create_time', 'update_time', 'get_state_display')
+
+
 class FriendModifySerializer(ModelSerializer):
 
     class Meta:

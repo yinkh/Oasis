@@ -43,6 +43,9 @@ class Friend(Base):
     agree_time = models.DateTimeField(null=True,
                                       blank=True,
                                       verbose_name=u'添加时间')
+    # 禁止看帖
+    is_post_block = models.BooleanField(default=False,
+                                        verbose_name=u'禁止看帖')
 
     class Meta:
         verbose_name = '好友关系'
