@@ -25,6 +25,7 @@ class CommentAdmin(admin.ModelAdmin):
     list_display = ('id', 'user', 'post', 'parent', 'create_time', 'is_abandon')
     search_fields = ('text',)
     list_filter = ('is_abandon',)
+    filter_horizontal = ('likes',)
 
     def get_queryset(self, request):
         return Comment.all.all()

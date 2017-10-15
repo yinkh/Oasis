@@ -179,19 +179,29 @@ class CommentModifySerializer(ModelSerializer):
         fields = ('post', 'text', 'parent')
 
 
-# 创建评论
+# 评论列表
 class CommentListSerializer(ModelSerializer):
     user = UserListSerializer(read_only=True)
+    is_liked = serializers.SerializerMethodField()
+
+    # 是否已点赞
+    def get_is_liked(self, instance):
+        return True if self.context['request'].user in instance.likes.all() else False
 
     class Meta:
         model = Comment
-        fields = ('id', 'user', 'post', 'text', 'parent', 'create_time', 'update_time', 'get_likes_count')
+        fields = ('id', 'user', 'post', 'text', 'parent', 'create_time', 'update_time', 'is_liked', 'get_likes_count')
 
 
-# 创建评论
+# 评论详情
 class CommentSerializer(ModelSerializer):
     user = UserListSerializer(read_only=True)
+    is_liked = serializers.SerializerMethodField()
+
+    # 是否已点赞
+    def get_is_liked(self, instance):
+        return True if self.context['request'].user in instance.likes.all() else False
 
     class Meta:
         model = Comment
-        fields = ('id', 'user', 'post', 'text', 'parent', 'create_time', 'update_time', 'get_likes_count')
+        fields = ('id', 'user', 'post', 'text', 'parent', 'create_time', 'update_time', 'is_liked', 'get_likes_count')

@@ -146,3 +146,26 @@ class CommentViewSet(ModelViewSet):
         Comment.objects.filter(parent=instance).update(parent=None)
         instance.is_abandon = True
         instance.save()
+
+    # 点赞
+    @detail_route(methods=['GET'])
+    def like(self, request, pk, *args, **kwargs):
+        instance = self.get_object()
+        instance.likes.add(request.user)
+        return success_response('点赞成功')
+
+    # 取消点赞
+    @detail_route(methods=['GET'])
+    def unlike(self, request, pk, *args, **kwargs):
+        # 范围为我点过赞的评论
+        self.queryset = request.user.comment_set.all()
+        instance = self.get_object()
+        instance.likes.remove(request.user)
+        return success_response('取消点赞成功')
+
+    # 评论点赞用户列表(未分页)
+    @detail_route(methods=['GET'])
+    def likes_list(self, request, pk, *args, **kwargs):
+        instance = self.get_object()
+        serializer = UserListSerializer(instance.likes, many=True, context=self.get_serializer_context())
+        return success_response(serializer.data)
