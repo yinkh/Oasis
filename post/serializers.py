@@ -124,13 +124,14 @@ class PostListSerializer(ModelSerializer):
     class Meta:
         model = Post
         fields = ('id', 'user', 'status', 'title', 'content', 'category', 'video', 'images', 'time', 'place',
-                  'location', 'get_likes_count', 'get_status_display', 'get_category_display')
+                  'location', 'get_likes_count', 'get_comment_count', 'get_status_display', 'get_category_display')
 
 
 # 帖子详情
 class PostSerializer(ModelSerializer):
     user = UserListSerializer(read_only=True)
     images = ImageListSerializer(read_only=True, many=True)
+    comments = serializers.SerializerMethodField()
 
     def to_representation(self, instance):
         """视频只返回video 图片只返回images"""
@@ -141,10 +142,14 @@ class PostSerializer(ModelSerializer):
             data.pop('video', None)
         return data
 
+    def get_comments(self, instance):
+        return CommentListSerializer(Comment.objects.filter(post=instance)[:10], many=True, context=self.context).data
+
     class Meta:
         model = Post
         fields = ('id', 'user', 'status', 'title', 'content', 'category', 'video', 'images', 'time', 'place',
-                  'location', 'get_likes_count', 'get_status_display', 'get_category_display')
+                  'location', 'comments', 'get_likes_count', 'get_comment_count', 'get_status_display',
+                  'get_category_display')
 
 
 # --------------------------------- 评论 ---------------------------------

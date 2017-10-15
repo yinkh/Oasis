@@ -101,6 +101,10 @@ class Post(Base):
     def get_likes_count(self):
         return self.likes.count()
 
+    # 评论总数
+    def get_comment_count(self):
+        return Comment.objects.filter(post=self).count()
+
     def __str__(self):
         return '{} {}'.format(self.id, self.title)
 
