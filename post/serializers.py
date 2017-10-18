@@ -1,6 +1,7 @@
+from django.conf import settings
 from common.serializers import *
-from common.utils import get_time_filename, validate_image_size, validate_video_size, get_list
-from user.serializers import UserListSerializer
+from common.utils import get_time_filename, validate_video_ext, sizeof_fmt, get_list
+from user.serializers import UserListSerializer, FileListSerializer
 from friend.models import Friend
 from .models import *
 
@@ -33,10 +34,22 @@ class ImageSerializer(ModelSerializer):
 # 创建帖子
 class PostModifySerializer(ModelSerializer):
     images = serializers.ListField(
-        child=serializers.ImageField(validators=[validate_image_size],
-                                     allow_empty_file=False,
+        child=serializers.ImageField(allow_empty_file=False,
                                      use_url=False)
     )
+
+    def validate_video(self, data):
+        if data:
+            if not validate_video_ext(data.ext):
+                raise serializers.ValidationError('非法的视频类型')
+            if data.file.size > settings.MAX_VIDEO_SIZE:
+                raise serializers.ValidationError('文件 {} 大小超过{}'.format(data.filename,
+                                                                        sizeof_fmt(settings.MAX_VIDEO_SIZE)))
+            request = self.context['request']
+            if data.user and hasattr(request, 'user'):
+                if data.user != request.user:
+                    raise serializers.ValidationError('仅可使用本人上传或者公开视频')
+        return data
 
     def validate(self, data):
         if self.instance is None:
@@ -130,6 +143,7 @@ class PostListSerializer(ModelSerializer):
 # 帖子详情
 class PostSerializer(ModelSerializer):
     user = UserListSerializer(read_only=True)
+    video = FileListSerializer(read_only=True)
     images = ImageListSerializer(read_only=True, many=True)
     comments = serializers.SerializerMethodField()
 

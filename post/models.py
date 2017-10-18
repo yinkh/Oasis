@@ -2,7 +2,7 @@ from django.db import models
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 
-from common.utils import get_time_filename, validate_image_size, validate_video_size
+from common.utils import get_time_filename, validate_image_size
 from common.models import Base
 
 
@@ -66,10 +66,11 @@ class Post(Base):
     category = models.PositiveIntegerField(choices=CATEGORY.items(),
                                            verbose_name=u'类型')
     # 视频
-    video = models.FileField(upload_to=get_video_path,
-                             validators=[validate_video_size],
-                             blank=True,
-                             verbose_name=u'视频')
+    video = models.ForeignKey('user.File',
+                              related_name='post_video',
+                              null=True,
+                              blank=True,
+                              verbose_name=u'视频')
     # 图片
     images = models.ManyToManyField('post.Image',
                                     blank=True,

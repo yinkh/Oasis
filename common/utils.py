@@ -120,6 +120,16 @@ def validate_image_ext(ext):
     return False
 
 
+def validate_video_ext(ext):
+    """
+    :param ext: ext
+    :return: 文件是否为视频类型
+    """
+    if ext and ext.lower() in ['gif', 'mp4', 'rmvb', 'avi', 'wma', '3gp', 'flash', 'mid']:
+        return True
+    return False
+
+
 def validate_video_size(value):
     """
     限制视频文件大小为20M 20M=20*1024KB=20*1024*1024Byte (Byte既字节)
