@@ -1,6 +1,7 @@
 import logging
 
 from datetime import datetime
+from django.db import transaction
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
@@ -14,6 +15,7 @@ from common.permissions import IsSelf, IsFileOwnerOrReadOnly
 from common.response import success_response, error_response
 from common.viewset import ModelViewSet, CreateModelMixin, HumanizationSerializerErrorsMixin, GenericViewSet
 from common.exception import VerifyError
+from common.utils import get_list
 
 from friend.models import Friend
 
@@ -402,6 +404,26 @@ class FileViewSet(ModelViewSet):
             return serializer.save(user=self.request.user)
         else:
             return serializer.save()
+
+    @list_route(methods=['POST'])
+    @transaction.atomic
+    def bulk_create(self, request):
+        errors = []
+        data = []
+        sid = transaction.savepoint()
+        for file in get_list(request.data, 'files'):
+            serializer = FileModifySerializer(data={'file': file})
+            if serializer.is_valid():
+                instance = self.perform_create(serializer)
+                data.append(FileInlineSerializer(instance, context=self.get_serializer_context()).data)
+            else:
+                errors.append(self.humanize_errors(serializer))
+        if len(errors) == 0:
+            transaction.savepoint_commit(sid)
+            return success_response(data)
+        else:
+            transaction.savepoint_rollback(sid)
+            return error_response(1, errors)
 
 
 # 协议

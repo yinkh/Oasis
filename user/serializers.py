@@ -2,7 +2,7 @@ from django.contrib.auth import password_validation
 from django.contrib.auth.hashers import make_password
 
 from common.serializers import *
-from common.utils import validate_image_ext, validate_image_size, sizeof_fmt
+from common.utils import validate_image_ext, sizeof_fmt
 from friend.models import Friend
 from .models import *
 from .utils import random_username, is_tel
@@ -166,7 +166,7 @@ class FileSerializer(ModelSerializer):
 class FileInlineSerializer(ModelSerializer):
     class Meta:
         model = File
-        fields = ('file', 'filename', 'ext', 'size')
+        fields = ('id', 'file', 'filename', 'ext', 'size')
 
 
 # --------------------------------- 协议 ---------------------------------

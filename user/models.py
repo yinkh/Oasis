@@ -13,7 +13,7 @@ from django.contrib.auth.models import AbstractBaseUser, UserManager
 from rest_framework_jwt.settings import api_settings
 
 from common.models import Base
-from common.utils import get_time_filename, send_sms, sizeof_fmt
+from common.utils import get_time_filename, send_sms, sizeof_fmt, validate_file_size
 from common.exception import SmsError
 
 from rongcloud import RongCloud
@@ -301,6 +301,7 @@ class File(models.Model):
                              verbose_name=u'上传人')
     # 文件
     file = models.FileField(upload_to=get_file_path,
+                            validators=[validate_file_size],
                             verbose_name=u'文件')
     # 文件名
     filename = models.CharField(max_length=255,

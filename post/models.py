@@ -2,7 +2,7 @@ from django.db import models
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 
-from common.utils import get_time_filename, validate_image_size
+from common.utils import get_time_filename
 from common.models import Base
 
 

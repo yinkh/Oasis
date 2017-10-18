@@ -100,14 +100,17 @@ def send_sms(phone_number, template_code, template_param):
         raise SmsError(str(e))
 
 
-def validate_image_size(value):
+def sizeof_fmt(num, suffix='B'):
     """
-    限制图片文件大小为2M 2M=2*1024KB=2*1024*1024Byte (Byte既字节)
-    :param value:文件实例
-    :return: raise 文件大小超过2MB
+    :param num: 文件大小
+    :param suffix:
+    :return:可读str
     """
-    if value.size > settings.MAX_IMAGE_SIZE:
-        raise ValidationError(u'文件{}大小超过2MB'.format(value.name))
+    for unit in ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z']:
+        if abs(num) < 1024.0:
+            return "%3.1f%s%s" % (num, unit, suffix)
+        num /= 1024.0
+    return "%.1f%s%s" % (num, 'Yi', suffix)
 
 
 def validate_image_ext(ext):
@@ -130,24 +133,13 @@ def validate_video_ext(ext):
     return False
 
 
-def validate_video_size(value):
+def validate_file_size(value):
     """
-    限制视频文件大小为20M 20M=20*1024KB=20*1024*1024Byte (Byte既字节)
+    限制文件大小为20M 20M=20*1024KB=20*1024*1024Byte (Byte既字节)
     :param value:文件实例
     :return: raise 文件大小超过20MB
     """
-    if value.size > settings.MAX_VIDEO_SIZE:
-        raise ValidationError(u'文件{}大小超过20MB'.format(value.name))
+    if value.size > settings.MAX_FILE_SIZE:
+        raise ValidationError(u'文件{}大小超过{}'.format(value.name, sizeof_fmt(settings.MAX_FILE_SIZE)))
 
 
-def sizeof_fmt(num, suffix='B'):
-    """
-    :param num: 文件大小
-    :param suffix:
-    :return:可读str
-    """
-    for unit in ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z']:
-        if abs(num) < 1024.0:
-            return "%3.1f%s%s" % (num, unit, suffix)
-        num /= 1024.0
-    return "%.1f%s%s" % (num, 'Yi', suffix)
