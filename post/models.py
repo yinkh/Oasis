@@ -6,32 +6,6 @@ from common.utils import get_time_filename, validate_image_size
 from common.models import Base
 
 
-def get_image_path(instance, filename):
-    return 'image/{}'.format(get_time_filename(filename))
-
-
-# 图片
-class Image(models.Model):
-    # 拥有者
-    user = models.ForeignKey('user.User',
-                             related_name='photo',
-                             on_delete=models.CASCADE,
-                             verbose_name='用户')
-    image = models.ImageField(upload_to=get_image_path,
-                              validators=[validate_image_size],
-                              verbose_name='图片')
-    # 创建时间
-    create_time = models.DateTimeField(auto_now_add=True,
-                                       verbose_name='创建时间')
-
-    class Meta:
-        verbose_name = '图片'
-        verbose_name_plural = '图片'
-
-    def __str__(self):
-        return '{} {}'.format(self.id, self.image.name)
-
-
 def get_video_path(instance, filename):
     return 'video/{}'.format(get_time_filename(filename))
 

@@ -7,30 +7,6 @@ from friend.models import Friend
 from .models import *
 
 
-# --------------------------------- 图片 ---------------------------------
-# 创建图片
-class ImageModifySerializer(ModelSerializer):
-    class Meta:
-        model = Image
-        fields = ('user', 'image')
-
-
-# 列表图片
-class ImageListSerializer(ModelSerializer):
-    class Meta:
-        model = Image
-        fields = ('id', 'image')
-
-
-# 图片详情
-class ImageSerializer(ModelSerializer):
-    user = UserListSerializer(read_only=True)
-
-    class Meta:
-        model = Image
-        fields = ('id', 'user', 'image', 'create_time')
-
-
 # --------------------------------- 帖子 ---------------------------------
 # 创建帖子
 class PostModifySerializer(ModelSerializer):
@@ -89,15 +65,6 @@ class PostModifySerializer(ModelSerializer):
             elif category == 1:
                 if 'video' in data:
                     raise ValidationError({'video': '多图不接收视频'})
-                # 判断图片是否属于本帖子、是否有权删除
-                image_d_errors = []
-                for image_d in Image.objects.filter(id__in=get_list(self.context['request'].data, 'images_delete')):
-                    if image_d not in self.instance.images.all():
-                        image_d_errors.append('图片(ID:{})不属于本帖子无权删除;'.format(image_d.id))
-                    elif image_d.user != self.instance.user:
-                        image_d_errors.append('图片(ID:{})无权删除;'.format(image_d.id))
-                if len(image_d_errors) != 0:
-                    raise ValidationError({'image': image_d_errors})
         return data
 
     class Meta:
