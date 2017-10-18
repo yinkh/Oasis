@@ -2,6 +2,7 @@ from django.contrib.auth import password_validation
 from django.contrib.auth.hashers import make_password
 
 from common.serializers import *
+from friend.models import Friend
 from .models import *
 from .utils import random_username, is_tel
 
@@ -70,28 +71,50 @@ class UserExpandSerializer(DynamicFieldsModelSerializer):
 # 列表用户
 class UserListSerializer(DynamicFieldsModelSerializer):
     portrait = serializers.SerializerMethodField()
+    full_name = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'portrait', 'gender', 'get_gender_display', 'get_full_name')
+        fields = ('id', 'username', 'portrait', 'gender', 'get_gender_display', 'full_name')
 
     def get_portrait(self, instance):
         request = self.context.get('request')
         return request.build_absolute_uri(instance.get_portrait())
+
+    def get_full_name(self, instance):
+        request = self.context['request']
+        if hasattr(request, 'user') and request.user.is_authenticated:
+            try:
+                friend = Friend.objects.get(from_user=request.user, to_user=instance)
+                return friend.remark
+            except (Friend.DoesNotExist, Friend.MultipleObjectsReturned):
+                pass
+        return instance.get_full_name()
 
 
 # 全部信息
 class UserSerializer(DynamicFieldsModelSerializer):
     portrait = serializers.SerializerMethodField()
+    full_name = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = ('id', 'username', 'tel', 'portrait', 'gender', 'nickname', 'birth_day', 'email',
-                  'location', 'introduction', 'last_login', 'get_gender_display', 'get_full_name')
+                  'location', 'introduction', 'last_login', 'get_gender_display', 'full_name')
 
     def get_portrait(self, instance):
         request = self.context.get('request')
         return request.build_absolute_uri(instance.get_portrait())
+
+    def get_full_name(self, instance):
+        request = self.context['request']
+        if hasattr(request, 'user') and request.user.is_authenticated:
+            try:
+                friend = Friend.objects.get(from_user=request.user, to_user=instance)
+                return friend.remark
+            except (Friend.DoesNotExist, Friend.MultipleObjectsReturned):
+                pass
+        return instance.get_full_name()
 
 
 # 全部信息
