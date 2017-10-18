@@ -52,7 +52,8 @@ class User(AbstractBaseUser, PermissionsMixin):
                            },
                            verbose_name=u'手机号码')
     # 头像
-    portrait = models.ImageField(upload_to=get_portrait_path,
+    portrait = models.ForeignKey('user.File',
+                                 related_name='user_portrait',
                                  null=True,
                                  blank=True,
                                  verbose_name=u'头像')
@@ -126,7 +127,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     # 获取头像
     def get_portrait(self):
         if self.portrait:
-            return self.portrait.url
+            return self.portrait.file.url
         else:
             if self.gender == 0:
                 return '/static/default/user/default_female.png'

@@ -2,6 +2,7 @@ import os
 from datetime import datetime
 
 from django.http import QueryDict
+from django.conf import settings
 from django.core.exceptions import ValidationError
 
 from .sms import AliYunSMS
@@ -105,8 +106,18 @@ def validate_image_size(value):
     :param value:文件实例
     :return: raise 文件大小超过2MB
     """
-    if value.size > 2097152:
+    if value.size > settings.MAX_IMAGE_SIZE:
         raise ValidationError(u'文件{}大小超过2MB'.format(value.name))
+
+
+def validate_image_ext(ext):
+    """
+    :param ext: ext
+    :return: 文件是否为图片类型
+    """
+    if ext and ext.lower() in ['jpg', 'png', 'svg', 'gif']:
+        return True
+    return False
 
 
 def validate_video_size(value):
@@ -115,7 +126,7 @@ def validate_video_size(value):
     :param value:文件实例
     :return: raise 文件大小超过20MB
     """
-    if value.size > 20971520:
+    if value.size > settings.MAX_VIDEO_SIZE:
         raise ValidationError(u'文件{}大小超过20MB'.format(value.name))
 
 

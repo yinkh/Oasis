@@ -2,6 +2,7 @@ from django.contrib.auth import password_validation
 from django.contrib.auth.hashers import make_password
 
 from common.serializers import *
+from common.utils import validate_image_ext, validate_image_size, sizeof_fmt
 from friend.models import Friend
 from .models import *
 from .utils import random_username, is_tel
@@ -33,7 +34,7 @@ class UserCreateSerializer(ModelSerializer):
 
 
 # 用户信息
-class UserExpandSerializer(DynamicFieldsModelSerializer):
+class UserExpandSerializer(ModelSerializer):
     password = serializers.CharField(max_length=128, required=False)
 
     def validate_password(self, value):
@@ -69,7 +70,7 @@ class UserExpandSerializer(DynamicFieldsModelSerializer):
 
 
 # 列表用户
-class UserListSerializer(DynamicFieldsModelSerializer):
+class UserListSerializer(ModelSerializer):
     portrait = serializers.SerializerMethodField()
     full_name = serializers.SerializerMethodField()
 
@@ -93,7 +94,7 @@ class UserListSerializer(DynamicFieldsModelSerializer):
 
 
 # 全部信息
-class UserSerializer(DynamicFieldsModelSerializer):
+class UserSerializer(ModelSerializer):
     portrait = serializers.SerializerMethodField()
     full_name = serializers.SerializerMethodField()
 
@@ -118,18 +119,28 @@ class UserSerializer(DynamicFieldsModelSerializer):
 
 
 # 全部信息
-class UserModifySerializer(DynamicFieldsModelSerializer):
+class UserModifySerializer(ModelSerializer):
+    def validate_portrait(self, data):
+        if data:
+            if not validate_image_ext(data.ext):
+                raise serializers.ValidationError('非法的图片类型')
+            if data.file.size > settings.MAX_IMAGE_SIZE:
+                raise serializers.ValidationError('文件 {} 大小超过{}'.format(data.filename,
+                                                                        sizeof_fmt(settings.MAX_IMAGE_SIZE)))
+            request = self.context['request']
+            if data.user and hasattr(request, 'user'):
+                if data.user != request.user:
+                    raise serializers.ValidationError('仅可使用本人上传或者公开图片')
+        return data
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'portrait', 'gender', 'nickname', 'birth_day', 'email',
-                  'location', 'introduction')
+        fields = ('username', 'portrait', 'gender', 'nickname', 'birth_day', 'email', 'location', 'introduction')
 
 
 # --------------------------------- 文件 ---------------------------------
 # 创建\修改文件
 class FileModifySerializer(ModelSerializer):
-
     class Meta:
         model = File
         fields = ('file',)
@@ -137,7 +148,6 @@ class FileModifySerializer(ModelSerializer):
 
 # 列表文件
 class FileListSerializer(ModelSerializer):
-
     class Meta:
         model = File
         fields = '__all__'
