@@ -60,7 +60,7 @@ def is_tel(tel):
     """
     # 删除+86字符
     tel = str(tel).replace('+86', '').replace(' ', '')
-    tel_regex = re.compile('^0\d{2,3}\d{7,8}$|^1[358]\d{9}$|^147\d{8}')
+    tel_regex = re.compile('^((13[0-9])|(14[5|7])|(15([0-3]|[5-9]))|(17[0-9])|(18[0,5-9]))\\d{8}$')
     if tel_regex.match(tel):
         return True
     else:

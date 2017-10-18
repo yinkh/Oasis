@@ -1,3 +1,4 @@
+import os
 import random
 from datetime import timedelta
 
@@ -12,7 +13,7 @@ from django.contrib.auth.models import AbstractBaseUser, UserManager
 from rest_framework_jwt.settings import api_settings
 
 from common.models import Base
-from common.utils import get_time_filename, send_sms
+from common.utils import get_time_filename, send_sms, sizeof_fmt
 from common.exception import SmsError
 
 from rongcloud import RongCloud
@@ -21,7 +22,7 @@ from rongcloud import RongCloud
 im = RongCloud(settings.IM_KEY, settings.IM_SECRET)
 
 
-def get_file_path(instance, filename):
+def get_portrait_path(instance, filename):
     return 'user/{}'.format(get_time_filename(filename))
 
 
@@ -51,7 +52,7 @@ class User(AbstractBaseUser, PermissionsMixin):
                            },
                            verbose_name=u'手机号码')
     # 头像
-    portrait = models.ImageField(upload_to=get_file_path,
+    portrait = models.ImageField(upload_to=get_portrait_path,
                                  null=True,
                                  blank=True,
                                  verbose_name=u'头像')
@@ -283,6 +284,67 @@ class TelVerify(models.Model):
 
     def __str__(self):
         return self.tel
+
+
+def get_file_path(instance, filename):
+    return 'file/{}'.format(get_time_filename(filename))
+
+
+# 文件
+class File(models.Model):
+    # 上传人
+    user = models.ForeignKey('user.User',
+                             related_name='file_user',
+                             null=True,
+                             blank=True,
+                             verbose_name=u'上传人')
+    # 文件
+    file = models.FileField(upload_to=get_file_path,
+                            verbose_name=u'文件')
+    # 文件名
+    filename = models.CharField(max_length=255,
+                                blank=True,
+                                verbose_name=u'文件名')
+    # 文件格式
+    ext = models.CharField(max_length=255,
+                           blank=True,
+                           verbose_name=u'文件格式')
+    # 文件大小
+    size = models.CharField(max_length=255,
+                            blank=True,
+                            verbose_name=u'文件大小')
+    # 创建时间
+    create_time = models.DateTimeField(auto_now_add=True,
+                                       verbose_name=u'创建时间')
+    # 更新时间
+    update_time = models.DateTimeField(auto_now=True,
+                                       verbose_name=u'更新时间')
+
+    class Meta:
+        verbose_name = '文件'
+        verbose_name_plural = '文件'
+        ordering = ('-id',)
+
+    def save(self, *args, **kwargs):
+        if not self.id:
+            self.set_info()
+        else:
+            # 改
+            this = File.objects.get(id=self.id)
+            if this.file != self.file:
+                this.file.delete(save=False)
+                self.set_info()
+        return super(File, self).save(*args, **kwargs)
+
+    def set_info(self):
+        filename = self.file.name
+        self.filename = filename
+        ext = os.path.splitext(filename)[1][1:]
+        self.ext = ext
+        self.size = sizeof_fmt(self.file.size)
+
+    def __str__(self):
+        return self.filename
 
 
 # 协议

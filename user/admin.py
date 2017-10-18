@@ -19,9 +19,6 @@ class MyUserAdmin(UserAdmin):
     search_fields = ('username', 'nickname', 'tel', 'email')
 
 
-admin.site.register(User, MyUserAdmin)
-
-
 # 短信验证码
 class TelAdmin(admin.ModelAdmin):
     list_display = ['tel', 'code', 'purpose', 'duration', 'send_time', 'is_success']
@@ -29,7 +26,11 @@ class TelAdmin(admin.ModelAdmin):
     list_filter = ('purpose', 'is_success')
 
 
-admin.site.register(TelVerify, TelAdmin)
+# 文件
+class FileAdmin(admin.ModelAdmin):
+    list_display = ['id', 'user', 'filename', 'file', 'ext', 'size', 'update_time']
+    search_fields = ('filename',)
+    readonly_fields = ('ext', 'size')
 
 
 # 协议
@@ -42,4 +43,7 @@ class AgreementAdmin(admin.ModelAdmin):
         return Agreement.all.all()
 
 
+admin.site.register(User, MyUserAdmin)
+admin.site.register(TelVerify, TelAdmin)
+admin.site.register(File, FileAdmin)
 admin.site.register(Agreement, AgreementAdmin)

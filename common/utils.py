@@ -117,3 +117,16 @@ def validate_video_size(value):
     """
     if value.size > 20971520:
         raise ValidationError(u'文件{}大小超过20MB'.format(value.name))
+
+
+def sizeof_fmt(num, suffix='B'):
+    """
+    :param num: 文件大小
+    :param suffix:
+    :return:可读str
+    """
+    for unit in ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z']:
+        if abs(num) < 1024.0:
+            return "%3.1f%s%s" % (num, unit, suffix)
+        num /= 1024.0
+    return "%.1f%s%s" % (num, 'Yi', suffix)
