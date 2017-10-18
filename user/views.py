@@ -10,7 +10,7 @@ from rest_framework.decorators import list_route
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.throttling import UserRateThrottle
 
-from common.permissions import IsSelf
+from common.permissions import IsSelf, IsFileOwnerOrReadOnly
 from common.response import success_response, error_response
 from common.viewset import ModelViewSet, CreateModelMixin, HumanizationSerializerErrorsMixin, GenericViewSet
 from common.exception import VerifyError
@@ -374,6 +374,34 @@ class UserViewSet(ModelViewSet):
         bucket = oss2.Bucket(auth, settings.END_POINT, settings.BUCKET_NAME, enable_crc=False)
         file_list = [obj.key for obj in oss2.ObjectIterator(bucket, prefix='media')]
         return success_response(file_list)
+
+
+# 文件
+class FileViewSet(ModelViewSet):
+    queryset = File.objects.all()
+    serializer_class = FileListSerializer
+    serializer_classes = {
+        'create': FileModifySerializer,
+        'list': FileListSerializer,
+        'retrieve': FileSerializer,
+        'update': FileModifySerializer,
+    }
+    permission_classes = (IsAuthenticated,)
+
+    # 修改、删除需要所有者权限
+    def get_permissions(self):
+        if self.action in ('update', 'partial_update', 'destroy'):
+            self.permission_classes = [IsAuthenticated, IsFileOwnerOrReadOnly, ]
+        return super(self.__class__, self).get_permissions()
+
+    def get_queryset(self):
+        return self.queryset.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        if self.request.user.is_authenticated:
+            return serializer.save(user=self.request.user)
+        else:
+            return serializer.save()
 
 
 # 协议

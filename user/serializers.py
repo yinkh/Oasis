@@ -126,6 +126,32 @@ class UserModifySerializer(DynamicFieldsModelSerializer):
                   'location', 'introduction')
 
 
+# --------------------------------- 文件 ---------------------------------
+# 创建\修改文件
+class FileModifySerializer(ModelSerializer):
+
+    class Meta:
+        model = File
+        fields = ('file',)
+
+
+# 列表文件
+class FileListSerializer(ModelSerializer):
+
+    class Meta:
+        model = File
+        fields = '__all__'
+
+
+# 文件详情
+class FileSerializer(ModelSerializer):
+    user = UserListSerializer(read_only=True)
+
+    class Meta:
+        model = File
+        fields = '__all__'
+
+
 # --------------------------------- 协议 ---------------------------------
 # 创建协议
 class AgreementCreateSerializer(ModelSerializer):

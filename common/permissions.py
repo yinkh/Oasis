@@ -26,3 +26,12 @@ class IsCommentOwnerOrReadOnly(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         return obj.user == request.user
+
+
+class IsFileOwnerOrReadOnly(permissions.BasePermission):
+    """
+    检测当前操作的用户是否是文件所有者
+    """
+
+    def has_object_permission(self, request, view, obj):
+        return obj.user == request.user
