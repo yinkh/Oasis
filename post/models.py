@@ -72,7 +72,7 @@ class Post(Base):
                               blank=True,
                               verbose_name=u'视频')
     # 图片
-    images = models.ManyToManyField('post.Image',
+    images = models.ManyToManyField('user.File',
                                     blank=True,
                                     verbose_name='图片')
     # 时间

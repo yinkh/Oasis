@@ -1,7 +1,8 @@
 from django.conf import settings
 from common.serializers import *
-from common.utils import get_time_filename, validate_video_ext, sizeof_fmt, get_list
-from user.serializers import UserListSerializer, FileListSerializer
+from common.utils import get_time_filename, validate_image_ext, validate_video_ext, sizeof_fmt, get_list
+from user.models import File
+from user.serializers import UserListSerializer, FileInlineSerializer
 from friend.models import Friend
 from .models import *
 
@@ -33,22 +34,38 @@ class ImageSerializer(ModelSerializer):
 # --------------------------------- 帖子 ---------------------------------
 # 创建帖子
 class PostModifySerializer(ModelSerializer):
-    images = serializers.ListField(
-        child=serializers.ImageField(allow_empty_file=False,
-                                     use_url=False)
-    )
+    def validate_images(self, data):
+        if data:
+            errors = []
+            for image in data:
+                image_errors = []
+                if not validate_image_ext(image.ext):
+                    image_errors.append('文件 {} 不是合法的图片类型'.format(image.filename))
+                if image.file.size > settings.MAX_IMAGE_SIZE:
+                    image_errors.append('文件 {} 大小超过{}'.format(image.filename,
+                                                              sizeof_fmt(settings.MAX_IMAGE_SIZE)))
+                request = self.context['request']
+                if image.user and hasattr(request, 'user'):
+                    if image.user != request.user:
+                        image_errors.append('文件 {} 不是本人上传或者公开图片'.format(image.filename))
+                if len(image_errors) != 0:
+                    errors.append(';'.join(image_errors))
+
+            if len(errors) != 0:
+                raise serializers.ValidationError(errors)
+        return data
 
     def validate_video(self, data):
         if data:
             if not validate_video_ext(data.ext):
-                raise serializers.ValidationError('非法的视频类型')
+                raise serializers.ValidationError('文件 {} 不是非法的视频文件'.format(data.filename))
             if data.file.size > settings.MAX_VIDEO_SIZE:
                 raise serializers.ValidationError('文件 {} 大小超过{}'.format(data.filename,
                                                                         sizeof_fmt(settings.MAX_VIDEO_SIZE)))
             request = self.context['request']
             if data.user and hasattr(request, 'user'):
                 if data.user != request.user:
-                    raise serializers.ValidationError('仅可使用本人上传或者公开视频')
+                    raise serializers.ValidationError('文件 {} 不是本人上传或者公开视频'.format(data.filename))
         return data
 
     def validate(self, data):
@@ -83,37 +100,6 @@ class PostModifySerializer(ModelSerializer):
                     raise ValidationError({'image': image_d_errors})
         return data
 
-    def create(self, validated_data):
-        images = validated_data.pop('images')
-        post = Post.objects.create(**validated_data)
-        if post.category == 1:
-            # 多图
-            for image in images:
-                post.images.add(Image.objects.create(user=post.user, image=image))
-        return post
-
-    # images新图片 images_delete待删除图片ID列表
-    def update(self, instance, validated_data):
-        # 从validated_date移除images为setattr方法做准备
-        if 'images' in validated_data:
-            images = validated_data.pop('images')
-        else:
-            images = []
-
-        if instance.category == 1:
-            # 更新多图
-            for image in images:
-                instance.images.add(Image.objects.create(user=instance.user, image=image))
-            for image_d in Image.objects.filter(id__in=get_list(self.context['request'].data, 'images_delete'),
-                                                user=instance.user):
-                instance.images.remove(image_d)
-
-        # 更新实例
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
-        return instance
-
     class Meta:
         model = Post
         fields = ('user', 'status', 'title', 'content', 'category', 'video', 'images', 'place', 'location')
@@ -123,7 +109,8 @@ class PostModifySerializer(ModelSerializer):
 # 列表帖子
 class PostListSerializer(ModelSerializer):
     user = UserListSerializer(read_only=True)
-    images = ImageListSerializer(read_only=True, many=True)
+    video = FileInlineSerializer(read_only=True)
+    images = FileInlineSerializer(read_only=True, many=True)
 
     def to_representation(self, instance):
         """视频只返回video 图片只返回images"""
@@ -143,8 +130,8 @@ class PostListSerializer(ModelSerializer):
 # 帖子详情
 class PostSerializer(ModelSerializer):
     user = UserListSerializer(read_only=True)
-    video = FileListSerializer(read_only=True)
-    images = ImageListSerializer(read_only=True, many=True)
+    video = FileInlineSerializer(read_only=True)
+    images = FileInlineSerializer(read_only=True, many=True)
     comments = serializers.SerializerMethodField()
 
     def to_representation(self, instance):

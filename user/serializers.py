@@ -162,6 +162,13 @@ class FileSerializer(ModelSerializer):
         fields = '__all__'
 
 
+# 文件-级联显示
+class FileInlineSerializer(ModelSerializer):
+    class Meta:
+        model = File
+        fields = ('file', 'filename', 'ext', 'size')
+
+
 # --------------------------------- 协议 ---------------------------------
 # 创建协议
 class AgreementCreateSerializer(ModelSerializer):
