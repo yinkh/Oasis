@@ -78,6 +78,10 @@ class PostListSerializer(ModelSerializer):
     user = UserListSerializer(read_only=True)
     video = FileInlineSerializer(read_only=True)
     images = FileInlineSerializer(read_only=True, many=True)
+    is_liked = serializers.SerializerMethodField()
+
+    def get_is_liked(self, instance):
+        return True if self.context['request'].user in instance.likes.all() else False
 
     def to_representation(self, instance):
         """视频只返回video 图片只返回images"""
@@ -91,7 +95,8 @@ class PostListSerializer(ModelSerializer):
     class Meta:
         model = Post
         fields = ('id', 'user', 'status', 'title', 'content', 'category', 'video', 'images', 'time', 'place',
-                  'location', 'get_likes_count', 'get_comment_count', 'get_status_display', 'get_category_display')
+                  'location', 'is_liked', 'get_likes_count', 'get_comment_count', 'get_status_display',
+                  'get_category_display')
 
 
 # 帖子详情
@@ -100,6 +105,10 @@ class PostSerializer(ModelSerializer):
     video = FileInlineSerializer(read_only=True)
     images = FileInlineSerializer(read_only=True, many=True)
     comments = serializers.SerializerMethodField()
+    is_liked = serializers.SerializerMethodField()
+
+    def get_is_liked(self, instance):
+        return True if self.context['request'].user in instance.likes.all() else False
 
     def to_representation(self, instance):
         """视频只返回video 图片只返回images"""
@@ -116,7 +125,7 @@ class PostSerializer(ModelSerializer):
     class Meta:
         model = Post
         fields = ('id', 'user', 'status', 'title', 'content', 'category', 'video', 'images', 'time', 'place',
-                  'location', 'comments', 'get_likes_count', 'get_comment_count', 'get_status_display',
+                  'location', 'comments', 'is_liked', 'get_likes_count', 'get_comment_count', 'get_status_display',
                   'get_category_display')
 
 
