@@ -110,11 +110,7 @@ class UserSerializer(ModelSerializer):
     def get_full_name(self, instance):
         request = self.context['request']
         if hasattr(request, 'user') and request.user.is_authenticated:
-            try:
-                friend = Friend.objects.get(from_user=request.user, to_user=instance)
-                return friend.remark
-            except (Friend.DoesNotExist, Friend.MultipleObjectsReturned):
-                pass
+            instance.get_full_name(user=request.user)
         return instance.get_full_name()
 
 

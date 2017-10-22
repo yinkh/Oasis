@@ -14,3 +14,12 @@ class SmsError(Exception):
 
         self.message = message
         self.code = code
+
+
+class PushError(Exception):
+    """An error while push message."""
+    def __init__(self, message, code=None):
+        super(PushError, self).__init__(message, code)
+
+        self.message = message
+        self.code = code

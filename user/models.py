@@ -15,6 +15,7 @@ from rest_framework_jwt.settings import api_settings
 from common.models import Base
 from common.utils import get_time_filename, send_sms, sizeof_fmt, validate_file_size
 from common.exception import SmsError
+from friend.models import Friend
 
 from rongcloud import RongCloud
 
@@ -112,11 +113,16 @@ class User(AbstractBaseUser, PermissionsMixin):
         ordering = ('id',)
 
     # 获取全名
-    def get_full_name(self):
-        if self.nickname == '':
-            return self.username
+    def get_full_name(self, user=None):
+        full_name = self.nickname if self.nickname else self.username
+        if user:
+            try:
+                friend = Friend.objects.get(from_user=user, to_user=self, state=2)
+                return friend.remark if friend.remark else full_name
+            except (Friend.DoesNotExist, Friend.MultipleObjectsReturned):
+                return full_name
         else:
-            return self.nickname
+            return full_name
 
     get_full_name.short_description = '全名'
 
