@@ -105,6 +105,15 @@ class PostViewSet(ModelViewSet):
         serializer = UserListSerializer(instance.likes, many=True, context=self.get_serializer_context())
         return success_response(serializer.data)
 
+    @list_route(methods=['POST'])
+    def nearby_posts(self, request, *args, **kwargs):
+        serializer = PostNearBySerializer(data=request.data)
+        if serializer.is_valid():
+            print(serializer.validated_data)
+            return success_response(serializer.validated_data)
+        else:
+            return error_response(1, self.humanize_errors(serializer))
+
 
 # 评论
 class CommentViewSet(ModelViewSet):

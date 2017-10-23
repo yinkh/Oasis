@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 from common.utils import get_time_filename
 from common.models import Base
@@ -58,11 +59,20 @@ class Post(Base):
                              null=True,
                              blank=True,
                              verbose_name='地点-名称')
-    # 地点-经纬度
-    location = models.CharField(max_length=30,
-                                null=True,
-                                blank=True,
-                                verbose_name='地点-经纬度')
+    # 地点-经度
+    longitude = models.DecimalField(null=True,
+                                    blank=True,
+                                    max_digits=9,
+                                    decimal_places=6,
+                                    validators=[MinValueValidator(-180), MaxValueValidator(180)],
+                                    verbose_name=u'地点-经度')
+    # 地点-纬度
+    latitude = models.DecimalField(null=True,
+                                   blank=True,
+                                   max_digits=8,
+                                   decimal_places=6,
+                                   validators=[MinValueValidator(-90), MaxValueValidator(90)],
+                                   verbose_name=u'地点-纬度')
     # 点赞用户
     likes = models.ManyToManyField('user.User',
                                    blank=True,

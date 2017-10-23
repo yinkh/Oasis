@@ -69,7 +69,7 @@ class PostModifySerializer(ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ('user', 'status', 'title', 'content', 'category', 'video', 'images', 'place', 'location')
+        fields = ('user', 'status', 'title', 'content', 'category', 'video', 'images', 'place', 'longitude', 'latitude')
         read_only_fields = ('user',)
 
 
@@ -95,7 +95,7 @@ class PostListSerializer(ModelSerializer):
     class Meta:
         model = Post
         fields = ('id', 'user', 'status', 'title', 'content', 'category', 'video', 'images', 'time', 'place',
-                  'location', 'is_liked', 'get_likes_count', 'get_comment_count', 'get_status_display',
+                  'longitude', 'latitude', 'is_liked', 'get_likes_count', 'get_comment_count', 'get_status_display',
                   'get_category_display')
 
 
@@ -125,8 +125,18 @@ class PostSerializer(ModelSerializer):
     class Meta:
         model = Post
         fields = ('id', 'user', 'status', 'title', 'content', 'category', 'video', 'images', 'time', 'place',
-                  'location', 'comments', 'is_liked', 'get_likes_count', 'get_comment_count', 'get_status_display',
-                  'get_category_display')
+                  'longitude', 'latitude', 'comments', 'is_liked', 'get_likes_count', 'get_comment_count',
+                  'get_status_display', 'get_category_display')
+
+
+# 附近帖子
+class PostNearBySerializer(ModelSerializer):
+    distance = serializers.DecimalField(max_digits=18, decimal_places=14, min_value=0, required=True, label='距离')
+
+    class Meta:
+        model = Post
+        fields = ('distance', 'longitude', 'latitude')
+        extra_kwargs = {'longitude': {'required': True}, 'latitude': {'required': True}}
 
 
 # --------------------------------- 评论 ---------------------------------

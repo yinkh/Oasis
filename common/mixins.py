@@ -157,17 +157,14 @@ class HumanizationSerializerErrorsMixin(object):
         :return: 交互友好的错误提示
         """
         humanization_errors = []
-        try:
-            model = serializer.Meta.model
-        except AttributeError:
-            # 参数错误 最可能原因 该serializer不是ModelSerializer没有Meta属性
-            model = self.get_queryset().model
+
+        fields = serializer.get_fields()
         for key, values in serializer.errors.items():
             try:
-                # 字段对应的verbose_name
-                verbose_name = model._meta.get_field(key).verbose_name
-            except FieldDoesNotExist:
-                # 模型对应的verbose_name
-                verbose_name = model._meta.verbose_name
+                field = fields[key]
+                # field中有model则使用model
+                verbose_name = field.label if field.label else key
+            except KeyError:
+                verbose_name = key
             humanization_errors.append('{}:{}'.format(verbose_name, ' '.join(values)))
         return '; '.join(humanization_errors)
