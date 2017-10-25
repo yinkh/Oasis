@@ -99,6 +99,39 @@ class PostListSerializer(ModelSerializer):
                   'get_category_display')
 
 
+# 列表帖子(带距离)
+class PostDistanceListSerializer(ModelSerializer):
+    user = UserListSerializer(read_only=True)
+    video = FileInlineSerializer(read_only=True)
+    images = FileInlineSerializer(read_only=True, many=True)
+    is_liked = serializers.SerializerMethodField()
+    distance = serializers.SerializerMethodField()
+
+    def get_is_liked(self, instance):
+        return True if self.context['request'].user in instance.likes.all() else False
+
+    def get_distance(self, instance):
+        longitude = self.context['longitude']
+        latitude = self.context['latitude']
+        from .utils import haversine
+        return haversine(longitude, latitude, instance.longitude, instance.latitude)
+
+    def to_representation(self, instance):
+        """视频只返回video 图片只返回images"""
+        data = super(PostDistanceListSerializer, self).to_representation(instance)
+        if instance.category == 0:
+            data.pop('images', None)
+        elif instance.category == 1:
+            data.pop('video', None)
+        return data
+
+    class Meta:
+        model = Post
+        fields = ('id', 'user', 'status', 'title', 'content', 'category', 'video', 'images', 'time', 'place',
+                  'longitude', 'latitude', 'is_liked', 'get_likes_count', 'get_comment_count', 'get_status_display',
+                  'get_category_display', 'distance')
+
+
 # 帖子详情
 class PostSerializer(ModelSerializer):
     user = UserListSerializer(read_only=True)

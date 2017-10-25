@@ -12,6 +12,7 @@ from common import jpush
 from .models import *
 from .serializers import *
 from .filters import *
+from .utils import bounding_box, haversine
 
 logger = logging.getLogger("info")
 
@@ -105,12 +106,38 @@ class PostViewSet(ModelViewSet):
         serializer = UserListSerializer(instance.likes, many=True, context=self.get_serializer_context())
         return success_response(serializer.data)
 
+    # 附近帖子
     @list_route(methods=['POST'])
     def nearby_posts(self, request, *args, **kwargs):
         serializer = PostNearBySerializer(data=request.data)
         if serializer.is_valid():
-            print(serializer.validated_data)
-            return success_response(serializer.validated_data)
+            data = serializer.validated_data
+            longitude = float(data['longitude'])
+            latitude = float(data['latitude'])
+            distance = float(data['distance'])
+            lon_min, lon_max, lat_min, lat_max = bounding_box(longitude, latitude, distance)
+            # 正方形内帖子
+            box_queryset = self.get_queryset().filter(longitude__gte=lon_min, longitude__lte=lon_max,
+                                                      latitude__gte=lat_min, latitude__lte=lat_max)
+            # 正方形内筛选圆形区域
+            ids = []
+            for x in box_queryset:
+                if haversine(longitude, latitude, x.longitude, x.latitude) <= distance:
+                    ids.append(x.id)
+            queryset = box_queryset.filter(id__in=ids)
+            # list部分
+            queryset = self.filter_queryset(queryset)
+            context = self.get_serializer_context()
+            context.update({'longitude': longitude, 'latitude': latitude})
+
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+
+                serializer = PostDistanceListSerializer(page, context=context, many=True)
+                return self.get_paginated_response(serializer.data)
+
+            serializer = self.get_serializer(queryset, context=context, many=True)
+            return success_response(serializer.data)
         else:
             return error_response(1, self.humanize_errors(serializer))
 
