@@ -32,6 +32,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_filters',
+    'crispy_forms',
+    'xadmin',
     'rest_framework',
     'django_cleanup',
     'user',

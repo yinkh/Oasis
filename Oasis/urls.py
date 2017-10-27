@@ -1,3 +1,5 @@
+import xadmin
+
 from django.contrib import admin
 from django.conf import settings
 from django.conf.urls import url, include
@@ -32,4 +34,5 @@ urlpatterns = [
     url(r'^user/verify_token/$', verify_jwt_token),
     url(r'^', include(router.urls)),
     url(r'^admin/', admin.site.urls),
+    url(r'^xadmin/', xadmin.site.urls),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

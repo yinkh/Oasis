@@ -9,3 +9,8 @@ django-cleanup==1.0.1
 six==1.11.0
 oss2==2.3.4
 jpush==3.2.8
+django-crispy-forms==1.7.0
+django-reversion==2.0.10
+django-formtools==2.1
+future==0.16.0
+httplib2==0.10.3
