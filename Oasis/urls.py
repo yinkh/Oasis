@@ -12,6 +12,7 @@ from user.views import UserViewSet, FileViewSet, AgreementViewSet
 from friend.views import FriendViewSet
 from follow.views import FollowViewSet
 from post.views import PostViewSet, CommentViewSet
+from favorites.views import FavoritesViewSet
 
 router = DefaultRouter()
 # 用户
@@ -28,6 +29,8 @@ router.register(r'follow', FollowViewSet)
 router.register(r'post', PostViewSet)
 # 评论
 router.register(r'comment', CommentViewSet)
+# 收藏夹
+router.register(r'favorites', FavoritesViewSet)
 
 urlpatterns = [
     url(r'^user/refresh_token/$', refresh_jwt_token),

@@ -1,5 +1,7 @@
 from rest_framework import permissions
 
+SAFE_METHODS = ('GET', 'HEAD', 'OPTIONS')
+
 
 class IsSelf(permissions.BasePermission):
     """
@@ -16,7 +18,7 @@ class IsPostOwnerOrReadOnly(permissions.BasePermission):
     """
 
     def has_object_permission(self, request, view, obj):
-        return obj.user == request.user
+        return request.method in SAFE_METHODS or obj.user == request.user
 
 
 class IsCommentOwnerOrReadOnly(permissions.BasePermission):
@@ -25,7 +27,7 @@ class IsCommentOwnerOrReadOnly(permissions.BasePermission):
     """
 
     def has_object_permission(self, request, view, obj):
-        return obj.user == request.user
+        return request.method in SAFE_METHODS or obj.user == request.user
 
 
 class IsFileOwnerOrReadOnly(permissions.BasePermission):
@@ -34,4 +36,13 @@ class IsFileOwnerOrReadOnly(permissions.BasePermission):
     """
 
     def has_object_permission(self, request, view, obj):
-        return obj.user == request.user
+        return request.method in SAFE_METHODS or obj.user == request.user
+
+
+class IsFavoritesOwnerOrReadOnly(permissions.BasePermission):
+    """
+    检测当前操作的用户是否是收藏夹所有者
+    """
+
+    def has_object_permission(self, request, view, obj):
+        return request.method in SAFE_METHODS or obj.user == request.user

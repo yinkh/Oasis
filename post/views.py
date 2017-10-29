@@ -12,7 +12,7 @@ from common import jpush
 from .models import *
 from .serializers import *
 from .filters import *
-from .utils import bounding_box, haversine
+from .utils import bounding_box, haversine, get_post_queryset
 
 logger = logging.getLogger("info")
 
@@ -49,15 +49,14 @@ class PostViewSet(ModelViewSet):
 
     def get_queryset(self):
         # 范围为 公开 好友的故事 我的帖子
-        queryset = Post.objects.filter(status=0).all() | self.get_queryset_friend() | \
-                   Post.objects.filter(user=self.request.user).all()
+        queryset = Post.objects.filter(status=0) | self.get_queryset_friend() | Post.objects.filter(user=self.request.user)
         return queryset
 
     # 好友的故事
     def get_queryset_friend(self):
         my_friends = [friend.to_user for friend in
                       Friend.objects.filter(from_user=self.request.user, is_block=False, is_post_block=False).all()]
-        queryset = self.queryset.filter(user__in=my_friends, status=1).all()
+        queryset = self.queryset.filter(user__in=my_friends, status=1)
         return queryset
 
     # 我的帖子列表
@@ -73,7 +72,7 @@ class PostViewSet(ModelViewSet):
     # 帖子列表
     @list_route(methods=['GET'])
     def post_list(self, request, *args, **kwargs):
-        queryset = self.queryset.filter(status=0).all()
+        queryset = self.queryset.filter(status=0)
         return self.list_queryset(request, queryset, *args, **kwargs)
 
     # 点赞
@@ -132,7 +131,6 @@ class PostViewSet(ModelViewSet):
 
             page = self.paginate_queryset(queryset)
             if page is not None:
-
                 serializer = PostDistanceListSerializer(page, context=context, many=True)
                 return self.get_paginated_response(serializer.data)
 
@@ -164,17 +162,8 @@ class CommentViewSet(ModelViewSet):
             self.permission_classes = [IsAuthenticated, IsCommentOwnerOrReadOnly, ]
         return super(self.__class__, self).get_permissions()
 
-    def get_post_queryset(self):
-        # 范围为 公开 好友的故事 我的帖子
-        user = self.request.user
-        my_friends = [friend.to_user for friend in
-                      Friend.objects.filter(from_user=user, is_block=False, is_post_block=False).all()]
-        queryset_friend = Post.objects.filter(user__in=my_friends, status=1).all()
-        queryset = Post.objects.filter(status=0).all() | queryset_friend | Post.objects.filter(user=user).all()
-        return queryset
-
     def get_queryset(self):
-        return self.queryset.filter(post__in=self.get_post_queryset())
+        return self.queryset.filter(post__in=get_post_queryset(self.request.user))
 
     # 限制评论用户
     def perform_create(self, serializer):

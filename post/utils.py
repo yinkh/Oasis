@@ -1,5 +1,7 @@
 import math
 from math import radians, cos, sin, asin, sqrt
+from friend.models import Friend
+from .models import Post
 
 # earth_radius = 3960.0  # for miles
 earth_radius = 6371.0  # for kms
@@ -45,3 +47,11 @@ def haversine(lon1, lat1, lon2, lat2):
     c = 2 * asin(sqrt(a))
     r = 6371  # Radius of earth in kilometers. Use 3956 for miles
     return c * r
+
+
+def get_post_queryset(user):
+    my_friends = [friend.to_user for friend in
+                  Friend.objects.filter(from_user=user, is_block=False, is_post_block=False).all()]
+    queryset_friend = Post.objects.filter(user__in=my_friends, status=1).all()
+    queryset = Post.objects.filter(status=0).all() | queryset_friend | Post.objects.filter(user=user).all()
+    return queryset

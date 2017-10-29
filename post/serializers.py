@@ -5,6 +5,7 @@ from user.models import File
 from user.serializers import UserListSerializer, FileInlineSerializer
 from friend.models import Friend
 from .models import *
+from .utils import get_post_queryset
 
 
 # --------------------------------- 帖子 ---------------------------------
@@ -178,16 +179,7 @@ class CommentModifySerializer(ModelSerializer):
     def __init__(self, *args, **kwargs):
         super(CommentModifySerializer, self).__init__(*args, **kwargs)
         # 限制有权评论的帖子范围
-        self.fields['post'].queryset = self.get_post_queryset()
-
-    def get_post_queryset(self):
-        # 范围为 公开 好友的故事 我的帖子
-        user = self.context['request'].user
-        my_friends = [friend.to_user for friend in
-                      Friend.objects.filter(from_user=user, is_block=False, is_post_block=False).all()]
-        queryset_friend = Post.objects.filter(user__in=my_friends, status=1).all()
-        queryset = Post.objects.filter(status=0).all() | queryset_friend | Post.objects.filter(user=user).all()
-        return queryset
+        self.fields['post'].queryset = get_post_queryset(self.context['request'].user)
 
     def validate(self, data):
         instance = self.Meta.model(**data)
