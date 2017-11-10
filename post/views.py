@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime, timedelta
 
 from rest_framework.decorators import list_route, detail_route
 from rest_framework.permissions import IsAuthenticated
@@ -8,6 +9,8 @@ from common.response import success_response, error_response
 from common.viewset import ModelViewSet
 from common.exception import PushError
 from common import jpush
+
+from recommend.models import Recommend
 
 from .models import *
 from .serializers import *
@@ -49,7 +52,8 @@ class PostViewSet(ModelViewSet):
 
     def get_queryset(self):
         # 范围为 公开 好友的故事 我的帖子
-        queryset = Post.objects.filter(status=0) | self.get_queryset_friend() | Post.objects.filter(user=self.request.user)
+        queryset = Post.objects.filter(status=0) | self.get_queryset_friend() | Post.objects.filter(
+            user=self.request.user)
         return queryset
 
     # 好友的故事
@@ -138,6 +142,14 @@ class PostViewSet(ModelViewSet):
             return success_response(serializer.data)
         else:
             return error_response(1, self.humanize_errors(serializer))
+
+    # 推荐帖子
+    @list_route(methods=['GET'])
+    def recommend_posts(self, request, *args, **kwargs):
+        recommend = Recommend.objects.filter(date__gte=datetime.now().date() - timedelta(days=10),
+                                             date__lte=datetime.now().date()).order_by('-date').first()
+        queryset = recommend.posts.all() if recommend else Post.objects.none()
+        return self.list_queryset(request, queryset, *args, **kwargs)
 
 
 # 评论
