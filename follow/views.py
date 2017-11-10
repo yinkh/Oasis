@@ -10,6 +10,7 @@ from common.response import success_response, error_response
 from user.models import User
 from user.filters import UserFilter
 from user.serializers import UserListSerializer
+from friend.models import Friend, FriendState
 
 from .models import *
 
@@ -37,6 +38,15 @@ class FollowViewSet(ListModelMixin, GenericViewSet):
         to_user = self.get_object()
         if to_user != request.user:
             Follow.objects.get_or_create(from_user=request.user, to_user=to_user)
+            # 对方关注了我->自动添加好友
+            if Follow.objects.filter(from_user=to_user, to_user=request.user).exists():
+                friend_from, is_created = Friend.objects.get_or_create(from_user=request.user, to_user=to_user)
+                friend_from.state = FriendState.Agree
+                friend_from.save()
+
+                friend_to, is_created = Friend.objects.get_or_create(from_user=to_user, to_user=request.user)
+                friend_to.state = FriendState.Agree
+                friend_to.save()
             return success_response('关注成功')
         else:
             return error_response(3, '不可关注自己')
@@ -49,6 +59,8 @@ class FollowViewSet(ListModelMixin, GenericViewSet):
     def unfollow(self, request, pk):
         to_user = self.get_object()
         Follow.objects.filter(from_user=request.user, to_user=to_user).update(is_abandon=True)
+        # 有好友关系则断开
+        Friend.objects.filter(from_user=request.user, to_user=to_user).update(is_abandon=True)
         return success_response('取消关注成功')
 
     # 检测关注状态

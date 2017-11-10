@@ -51,5 +51,10 @@ class Friend(Base):
         verbose_name = '好友关系'
         verbose_name_plural = '好友关系'
 
+    def save(self, *args, **kwargs):
+        if not self.id and not self.remark:
+            self.remark = self.to_user.get_full_name()
+        return super(Friend, self).save(*args, **kwargs)
+
     def __str__(self):
         return '{} {}'.format(self.from_user.username, self.to_user.username)
