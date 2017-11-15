@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 
 import os
 from datetime import timedelta
+from collections import OrderedDict
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -32,6 +33,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_filters',
+    'constance',
+    'constance.backends.database',
     'crispy_forms',
     'xadmin',
     'rest_framework',
@@ -199,6 +202,18 @@ STATICFILES_DIRS = (
 # 用户上传文件
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# constance设置
+CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
+CONSTANCE_IGNORE_ADMIN_VERSION_CHECK = True
+
+SENSITIVE_WORD = '敏感词'
+CONSTANCE_CONFIG = OrderedDict([
+    (SENSITIVE_WORD, ('', SENSITIVE_WORD)),
+])
+CONSTANCE_CONFIG_FIELDSETS = OrderedDict([
+    ('敏感词', (SENSITIVE_WORD,)),
+])
 
 # 输出日志
 LOG_PATH = os.path.join(BASE_DIR, "log/")
