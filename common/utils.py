@@ -5,11 +5,34 @@ from django.http import QueryDict
 from django.conf import settings
 from django.core.exceptions import ValidationError
 
+from constance import LazyConfig
+
 from .sms import AliYunSMS
 from .exception import SmsError
 import logging
 
 logger = logging.getLogger("info")
+
+config = LazyConfig()
+
+
+def put_value(key, value):
+    """
+    更新数据库设置项
+    :param key: 键名
+    :param value: 值
+    :return: 无返回
+    """
+    setattr(config, key, value)
+
+
+def get_value(key):
+    """
+    获取数据库设置项值
+    :param key: 键名
+    :return: 键名对应的设置项值
+    """
+    return getattr(config, key)
 
 
 def get_time_filename(filename):
@@ -141,5 +164,3 @@ def validate_file_size(value):
     """
     if value.size > settings.MAX_FILE_SIZE:
         raise ValidationError(u'文件{}大小超过{}'.format(value.name, sizeof_fmt(settings.MAX_FILE_SIZE)))
-
-
