@@ -16,7 +16,7 @@ from favorites.views import FavoritesViewSet
 
 router = DefaultRouter()
 # 用户
-router.register(r'user', UserViewSet)
+router.register(r'user', UserViewSet, base_name='user')
 # 文件
 router.register(r'file', FileViewSet)
 # 协议
@@ -24,7 +24,7 @@ router.register(r'agreement', AgreementViewSet)
 # 好友
 router.register(r'friend', FriendViewSet)
 # 关注
-router.register(r'follow', FollowViewSet)
+router.register(r'follow', FollowViewSet, base_name='follow')
 # 帖子
 router.register(r'post', PostViewSet)
 # 评论
