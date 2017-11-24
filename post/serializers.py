@@ -1,9 +1,7 @@
 from django.conf import settings
 from common.serializers import *
-from common.utils import get_time_filename, validate_image_ext, validate_video_ext, sizeof_fmt, get_list
-from user.models import File
+from common.utils import get_value, validate_image_ext, validate_video_ext, sizeof_fmt
 from user.serializers import UserListSerializer, FileInlineSerializer
-from friend.models import Friend
 from .models import *
 from .utils import get_post_queryset
 
@@ -180,6 +178,18 @@ class CommentModifySerializer(ModelSerializer):
         super(CommentModifySerializer, self).__init__(*args, **kwargs)
         # 限制有权评论的帖子范围
         self.fields['post'].queryset = get_post_queryset(self.context['request'].user)
+
+    def validate_text(self, data):
+        # 必须实时import 不然会出现敏感词未更新的情况
+        from .signals import sensitive_words
+        error_words = []
+        for word in sensitive_words:
+            if word in data:
+                error_words.append(word)
+        if len(error_words) == 0:
+            return data
+        else:
+            raise serializers.ValidationError('评论包含敏感词:{}'.format(','.join(error_words)))
 
     def validate(self, data):
         instance = self.Meta.model(**data)
